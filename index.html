@@ -118,21 +118,45 @@
   .cd-tab.active{color:var(--text);border-bottom-color:var(--accent);}
 
   /* KANBAN */
-  .kanban-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;}
-  .kcol{background:#EAEAE3;border-radius:12px;padding:12px;min-height:120px;}
+  .kanban-cols{display:flex;gap:14px;align-items:start;overflow-x:auto;padding-bottom:6px;}
+  .kcol{background:#EAEAE3;border-radius:12px;padding:12px;min-height:120px;width:250px;flex:0 0 250px;}
   .kcol h4{font-size:12.5px;font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;}
   .kcard{background:var(--surface);border-radius:9px;padding:11px 12px;margin-bottom:9px;border-left:3px solid var(--accent);cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,.04);}
   .kcard.dragging{opacity:.4;}
   .kcard.p-high{border-left-color:var(--red);}
   .kcard.p-med{border-left-color:var(--amber);}
   .kcard.p-low{border-left-color:var(--text-3);}
+  .kcard .epic-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 7px;border-radius:4px;margin-bottom:6px;color:#fff;}
   .kcard .t{font-size:13px;font-weight:500;margin-bottom:8px;}
-  .kcard .meta-row{display:flex;justify-content:space-between;align-items:center;}
+  .kcard .meta-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px;}
   .kcard-dates{font-size:10.5px;color:var(--text-2);margin-bottom:7px;}
+  .kcard .assigned-by{font-size:9.5px;color:var(--text-2);background:#EDECE5;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;}
   .sprint-item-head{display:flex;justify-content:space-between;padding:0 0 6px;font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:.03em;}
   .sprint-item-head span:last-child{margin-right:2px;}
   .kcard .init{width:20px;height:20px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
   .kcol.dragover{outline:2px dashed var(--accent);outline-offset:-4px;}
+  .kcol-add{background:transparent;border:1.5px dashed #C9C8BE;border-radius:12px;width:210px;flex:0 0 210px;min-height:44px;padding:12px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text-2);font-size:12.5px;font-weight:600;cursor:pointer;transition:.12s;align-self:flex-start;}
+  .kcol-add:hover{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* EPIC LABEL (Jira-style) */
+  .epic-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;color:#fff;flex-shrink:0;white-space:nowrap;}
+  .epic-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+
+  /* ASSIGNED-BY LABEL */
+  .assignedby-pill{background:#EDECE5;color:var(--text-2);font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+
+  /* SPRINT MESSAGE BOX (admin) */
+  .sprint-msgbox{border-top:1px solid #F0EFE8;padding:12px 14px;background:#FAFAF7;}
+  .sprint-msgbox .msg-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);margin-bottom:8px;}
+  .sprint-msg-list{max-height:150px;overflow-y:auto;margin-bottom:9px;}
+  .sprint-msg{display:flex;gap:8px;padding:6px 0;font-size:12.5px;}
+  .sprint-msg .init{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sprint-msg .body b{font-weight:600;}
+  .sprint-msg .body .txt{color:var(--text);margin-top:1px;}
+  .sprint-msg .body .ts{color:var(--text-3);font-size:10.5px;margin-top:2px;}
+  .sprint-msg-input{display:flex;gap:8px;}
+  .sprint-msg-input input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:'Inter';background:var(--surface);}
+  .sprint-msg-input button{flex-shrink:0;}
 
   /* CALENDAR */
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
@@ -250,6 +274,11 @@
 
   .empty-state{text-align:center;padding:50px 20px;color:var(--text-2);}
   .empty-state .big{font-size:34px;margin-bottom:8px;}
+
+  /* EMPLOYEE CLIENT PICKER (above kanban) */
+  .emp-client-picker{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .emp-client-picker label{font-size:12px;font-weight:600;color:var(--text-2);}
+  .emp-client-picker select{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:'Inter';background:var(--surface);color:var(--text);}
 </style>
 </head>
 <body>
@@ -354,30 +383,25 @@
       <div id="cd-tab-content"></div>
     </div>
 
-    <!-- ===== EMPLOYEE: DASHBOARD ===== -->
-    <div class="view" id="view-emp-dashboard">
-      <div class="grid-3">
-        <div class="card">
-          <h3>My projects</h3>
-          <div id="emp-projects"></div>
-        </div>
-        <div class="card">
-          <h3>Tasks from admin</h3>
-          <div id="emp-tasks"></div>
-        </div>
-        <div class="card">
-          <h3>Client tickets <a onclick="openMyRaiseInternal()">+ Raise internal ticket</a></h3>
-          <div id="emp-client-tickets"></div>
-        </div>
+    <!-- ===== EMPLOYEE: TICKETS ===== -->
+    <div class="view" id="view-emp-tickets">
+      <div class="filter-tabs">
+        <div class="ftab active" data-f="client" onclick="setEmpTicketSource('client',this)">Client tickets</div>
+        <div class="ftab" data-f="internal" onclick="setEmpTicketSource('internal',this)">My internal tickets</div>
       </div>
+      <table id="emp-tickets-table">
+        <tr id="emp-tickets-head"><th>Subject</th><th>Client</th><th>Priority</th><th>Status</th></tr>
+        <tbody id="emp-tickets-rows"></tbody>
+      </table>
     </div>
 
-    <!-- ===== EMPLOYEE: MY CLIENTS ===== -->
-    <div class="view" id="view-emp-clients">
-      <table>
-        <tr><th>Client</th><th>Industry</th><th>Active projects</th><th>Contract ends</th><th>Status</th></tr>
-        <tbody id="emp-clients-rows"></tbody>
-      </table>
+    <!-- ===== EMPLOYEE: KANBAN BOARD ===== -->
+    <div class="view" id="view-emp-kanban">
+      <div class="emp-client-picker">
+        <label>Client board</label>
+        <select id="emp-kanban-client-select" onchange="setEmpKanbanClient(this.value)"></select>
+      </div>
+      <div class="kanban-cols" id="emp-kanban"></div>
     </div>
 
     <!-- ===== CLIENT: DASHBOARD ===== -->
@@ -468,7 +492,9 @@ const DATA = {
       audits:[
         {ts:"Jul 14, 10:42 AM",actor:"Aditya K.",action:"task.status_changed",entity:"Reels script v2 → Review"},
         {ts:"Jul 14, 09:10 AM",actor:"Client",action:"asset.approved",entity:"carousel_slide_02.jpg"},
-        {ts:"Jul 13, 04:05 PM",actor:"Rohan D.",action:"budget.updated",entity:"Creative production +₹15,000"}
+        {ts:"Jul 13, 04:05 PM",actor:"Rohan D.",action:"budget.updated",entity:"Creative production +₹15,000"},
+        {ts:"Jul 13, 11:20 AM",actor:"Riya Mehta",action:"invoice.sent",entity:"#1043 → ₹2,10,000"},
+        {ts:"Jul 12, 05:40 PM",actor:"Client",action:"ticket.created",entity:"Ad account access request"}
       ],
       assets:[
         {name:"festive_hero_banner_v3.jpg",type:"JPG",color:"var(--accent)",status:{label:"Approved",cls:"green"}},
@@ -510,8 +536,9 @@ const DATA = {
       ],
       invoices:[{id:"#1044",amount:"₹1,45,000",due:"Jul 5, 2026",status:{label:"Overdue",cls:"red"}}],
       audits:[
-        {ts:"Jul 13, 06:22 PM",actor:"Priya S.",action:"ticket.created",entity:"Landing page CTA broken"},
-        {ts:"Jul 12, 11:15 AM",actor:"Team Lead",action:"task.status_changed",entity:"Shipment tracking module → In progress"}
+        {ts:"Jul 14, 06:22 PM",actor:"Client",action:"ticket.created",entity:"Landing page CTA broken"},
+        {ts:"Jul 13, 11:15 AM",actor:"Team Lead",action:"task.status_changed",entity:"Shipment tracking module → In progress"},
+        {ts:"Jul 12, 09:05 AM",actor:"Riya Mehta",action:"invoice.status_changed",entity:"#1044 → Overdue"}
       ],
       assets:[{name:"landing_page_wireframe.ai",type:"AI",color:"#788B3C",status:{label:"Draft",cls:"gray"}},{name:"product_demo_final.mp4",type:"MP4",color:"var(--clay)",status:{label:"Approved",cls:"green"}}],
       calendar:{4:[["meet","Sprint review"]],10:[["deadline","Staging deploy"]],17:[["meet","Client demo"]],28:[["deadline","QA sign-off"]]},
@@ -592,15 +619,15 @@ const DATA = {
 /* =========================================================
    STATE
    ========================================================= */
-const state = { role:"admin", persona:null, currentClient:null, currentTab:null, empTicketFilter:"all", modalMode:null, modalOpts:{}, kanbanView:"board" };
+const state = { role:"admin", persona:null, currentClient:null, currentTab:null, empTicketFilter:"all", empTicketSource:"client", empKanbanClient:null, modalMode:null, modalOpts:{}, kanbanView:"board" };
 
 const titles = {
   "admin-dashboard":["Dashboard","Agency-wide overview across all clients"],
   "admin-clients":["Clients","Click into a client to see their full project workspace"],
   "admin-employee-support":["Employee support","Internal requests raised by your team"],
   "client-detail":["","" ],
-  "emp-dashboard":["Dashboard","Your projects, tasks and client tickets"],
-  "emp-clients":["Clients","Click into a client to see their project workspace"],
+  "emp-tickets":["Tickets","Client tickets from your accounts, and your own internal requests"],
+  "emp-kanban":["Kanban board","Track and update work items across your assigned clients"],
   "client-dashboard":["Dashboard","Your projects at a glance"],
   "client-projects":["My projects","Full detail on every project we're running for you"],
   "client-calendar":["Calendar","Upcoming posts, meetings and deliverables"],
@@ -617,8 +644,8 @@ const NAV = {
     {group:"Support", items:[["employee-support","admin-employee-support",iconTicket(),true]]}
   ],
   employee:[
-    {group:"Overview", items:[["dashboard","emp-dashboard",iconGrid()]]},
-    {group:"Agency", items:[["clients","emp-clients",iconClients()]]}
+    {group:"Work", items:[["tickets","emp-tickets",iconTicket()]]},
+    {group:"Work", items:[["kanban","emp-kanban",iconGrid()]]}
   ],
   client:[
     {group:"Overview", items:[["dashboard","client-dashboard",iconGrid()]]},
@@ -648,7 +675,7 @@ function renderNav(){
   });
 }
 function capLabel(v){
-  const map={dashboard:"Dashboard",clients:"Clients","employee-support":"Employee support",calendar:"Calendar",tickets:"Support tickets",myprojects:"My projects"};
+  const map={dashboard:"Dashboard",clients:"Clients","employee-support":"Employee support",calendar:"Calendar",tickets:"Support tickets",myprojects:"My projects",kanban:"Kanban board"};
   return map[v]||v;
 }
 
@@ -671,8 +698,8 @@ function setView(id, el){
   if(id==='admin-dashboard') renderAdminDashboard();
   if(id==='admin-clients') renderAdminClients();
   if(id==='admin-employee-support') renderEmpTickets();
-  if(id==='emp-dashboard') renderEmpDashboard();
-  if(id==='emp-clients') renderEmpClients();
+  if(id==='emp-tickets') renderEmpTicketsPage();
+  if(id==='emp-kanban') renderEmpKanbanPage();
   if(id==='client-dashboard') renderClientDashboard();
   if(id==='client-projects') renderClientProjects();
   if(id==='client-calendar') renderClientCalendarFull();
@@ -687,7 +714,7 @@ function updateTopbarButtons(id){
     primary.style.display='inline-block'; primary.textContent='+ Raise ticket';
     primary.onclick = ()=>openModal('client-ticket');
   }
-  if(id==='emp-dashboard'){
+  if(id==='emp-tickets'){
     primary.style.display='inline-block'; primary.textContent='+ Raise internal ticket';
     primary.onclick = ()=>openModal('internal-ticket');
   }
@@ -731,7 +758,7 @@ function setRole(role, el){
       const o=document.createElement('option'); o.value=id; o.textContent=`${e.name} — ${e.title}`; select.appendChild(o);
     });
     setPersona(Object.keys(DATA.employees)[0]);
-    setView('emp-dashboard');
+    setView('emp-tickets');
   } else {
     personaWrap.style.display='block';
     document.getElementById('persona-label').textContent='Viewing as client';
@@ -748,8 +775,8 @@ function setPersona(id){
   if(state.role==='employee'){
     const e = DATA.employees[id];
     setWho(e.name, e.title, e.initials);
-    if(document.getElementById('view-emp-dashboard').classList.contains('active')) renderEmpDashboard();
-    if(document.getElementById('view-emp-clients').classList.contains('active')) renderEmpClients();
+    if(document.getElementById('view-emp-tickets').classList.contains('active')) renderEmpTicketsPage();
+    if(document.getElementById('view-emp-kanban').classList.contains('active')) renderEmpKanbanPage();
   } else if(state.role==='client'){
     const c = DATA.clients[id];
     setWho('Client contact', c.name, c.name.split(' ').map(w=>w[0]).slice(0,2).join(''));
@@ -798,6 +825,14 @@ function renderEmpTickets(){
 }
 function prioCls(p){return p==='High'?'red':p==='Medium'?'amber':'gray';}
 function statusCls(s){return s==='Resolved'?'green':s==='In progress'?'amber':'gray';}
+/* Audit is a client<->admin channel only — any entry authored by an
+   employee (task/status updates, internal actions) is excluded so the
+   trail never surfaces employee activity, only what the client and
+   admin did/said to each other. */
+function isClientAdminAudit(a){
+  const adminNames = ['Riya Mehta','Admin','Super Admin'];
+  return a.actor === 'Client' || adminNames.includes(a.actor);
+}
 function cycleStatus(idx){
   const order=['Open','In progress','Resolved'];
   const item = DATA.employeeTickets[idx];
@@ -831,7 +866,7 @@ function openClientDetail(clientId, fromRole){
   setClientTab(tabs[0][0], document.querySelector('.cd-tab'));
 }
 function backToClientList(){
-  setView(state.detailFromRole==='admin' ? 'admin-clients' : 'emp-clients');
+  setView(state.detailFromRole==='admin' ? 'admin-clients' : 'emp-kanban');
 }
 function setClientTab(tab, el){
   state.currentTab = tab;
@@ -858,8 +893,10 @@ function setClientTab(tab, el){
     </table>`;
   }
   if(tab==='audits'){
-    host.innerHTML = `<table><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Entity</th></tr>
-      ${c.audits.length? c.audits.map(a=>`<tr><td>${a.ts}</td><td>${a.actor}</td><td>${a.action}</td><td>${a.entity}</td></tr>`).join(''):`<tr><td colspan="4"><div class="empty-hint">No audit events yet.</div></td></tr>`}
+    const clientAdminAudits = c.audits.filter(isClientAdminAudit);
+    host.innerHTML = `<div class="empty-hint" style="padding:0 0 12px;">Showing client ↔ admin activity only — internal employee actions are not part of this trail.</div>
+      <table><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Entity</th></tr>
+      ${clientAdminAudits.length? clientAdminAudits.map(a=>`<tr><td>${a.ts}</td><td>${a.actor}</td><td>${a.action}</td><td>${a.entity}</td></tr>`).join(''):`<tr><td colspan="4"><div class="empty-hint">No client/admin audit events yet.</div></td></tr>`}
     </table>`;
   }
   if(tab==='kanban'){
@@ -873,7 +910,7 @@ function setClientTab(tab, el){
       renderKanbanSprints(document.getElementById('cd-kanban-sprints'), state.currentClient);
     } else {
       host.innerHTML = toggleHtml + `${isAdmin?'<div style="display:flex;justify-content:flex-end;margin:0 0 10px;"><button class="btn sm" onclick="openModal(\'assign-task\',{lockClient:true})">+ Assign task</button></div>':''}<div class="kanban-cols" id="cd-kanban"></div>`;
-      renderKanban(document.getElementById('cd-kanban'), state.currentClient);
+      renderKanban(document.getElementById('cd-kanban'), state.currentClient, {allowAddColumn:isAdmin});
     }
   }
   if(tab==='assets'){
@@ -929,66 +966,57 @@ function cycleClientTicketStatus(clientId, idx){
 }
 
 /* =========================================================
-   EMPLOYEE — DASHBOARD / CLIENTS
+   EMPLOYEE PORTAL — scoped to just Tickets + Kanban board.
+   No client list / client records are exposed to employees.
    ========================================================= */
-function renderEmpDashboard(){
+function setEmpTicketSource(src, el){
+  state.empTicketSource = src;
+  document.querySelectorAll('#view-emp-tickets .ftab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderEmpTicketsPage();
+}
+function renderEmpTicketsPage(){
   const e = DATA.employees[state.persona];
-  const myProjects = [];
-  e.clients.forEach(cid=>{
-    const c = DATA.clients[cid];
-    c.projects.forEach(p=> myProjects.push({clientId:cid, clientName:c.name, ...p}));
-  });
-  document.getElementById('emp-projects').innerHTML = myProjects.length ? myProjects.map(p=>
-    `<div class="row-item clickable" onclick="openClientDetail('${p.clientId}','employee')"><div>${p.name}<div class="meta">${p.clientName} · ${p.progress}%</div></div><span class="pill ${p.status.cls}">${p.status.label}</span></div>`).join('')
-    : '<div class="empty-hint">No projects assigned right now.</div>';
-
-  document.getElementById('emp-tasks').innerHTML = e.tasks.map((t,i)=>{
-    if(t.link){
-      const linked = (DATA.clients[t.link.clientId].tasks||[]).find(ct=>ct.id===t.link.taskId);
-      const status = linked ? linked.status : (t.done ? 'Done' : 'To do');
-      const statusCls = status==='Done' ? 'done' : status==='Review' ? 'review' : status==='In progress' ? 'inprogress' : '';
-      return `<div class="task-item ${status==='Done'?'done':''}">
-        <select class="jira-status ${statusCls}" style="flex-shrink:0;" onchange="setEmpLinkedTaskStatus('${state.persona}',${i},this.value)">
-          <option ${status==='To do'?'selected':''}>To do</option>
-          <option ${status==='In progress'?'selected':''}>In progress</option>
-          <option ${status==='Review'?'selected':''}>Review</option>
-          <option ${status==='Done'?'selected':''}>Done</option>
-        </select>
-        <div><div class="tt">${t.title}</div><div class="tmeta">Due ${t.due} · <span class="pill ${prioCls(t.priority)}" style="padding:1px 7px;">${t.priority}</span> · <span class="pill gray" style="padding:1px 7px;">On board</span></div></div></div>`;
-    }
-    return `<div class="task-item ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${state.persona}',${i})">
-      <div><div class="tt">${t.title}</div><div class="tmeta">Due ${t.due} · <span class="pill ${prioCls(t.priority)}" style="padding:1px 7px;">${t.priority}</span></div></div></div>`;
-  }).join('');
-
-  const clientTix = [];
-  e.clients.forEach(cid=>{
-    DATA.clients[cid].tickets.forEach(t=> clientTix.push({clientId:cid, clientName:DATA.clients[cid].name, ...t}));
-  });
-  document.getElementById('emp-client-tickets').innerHTML = clientTix.length ? clientTix.map(t=>
-    `<div class="row-item clickable" onclick="openClientDetail('${t.clientId}','employee')"><div>${t.subject}<div class="meta">${t.clientName} · ${t.date}</div></div><span class="pill ${statusCls(t.status)}">${t.status}</span></div>`).join('')
-    : '<div class="empty-hint">No open client tickets.</div>';
+  const src = state.empTicketSource || 'client';
+  const head = document.getElementById('emp-tickets-head');
+  const rows = document.getElementById('emp-tickets-rows');
+  if(src==='client'){
+    head.innerHTML = `<th>Subject</th><th>Client</th><th>Priority</th><th>Status</th>`;
+    const clientTix = [];
+    e.clients.forEach(cid=>{
+      DATA.clients[cid].tickets.forEach((t,i)=> clientTix.push({clientId:cid, clientName:DATA.clients[cid].name, idx:i, ...t}));
+    });
+    rows.innerHTML = clientTix.length ? clientTix.map(t=>
+      `<tr><td>${t.subject}<div class="meta" style="color:var(--text-2);font-size:11.5px;margin-top:2px;">${t.desc||''}</div></td>
+        <td>${t.clientName}</td>
+        <td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
+        <td><span class="pill ${statusCls(t.status)} clickable" onclick="cycleClientTicketStatus('${t.clientId}',${t.idx})">${t.status}</span></td></tr>`).join('')
+      : `<tr><td colspan="4"><div class="empty-hint">No client tickets on your accounts.</div></td></tr>`;
+  } else {
+    head.innerHTML = `<th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th>`;
+    const mine = DATA.employeeTickets.map((t,i)=>({...t, idx:i})).filter(t=>t.raisedBy===e.name);
+    rows.innerHTML = mine.length ? mine.map(t=>
+      `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
+        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td></tr>`).join('')
+      : `<tr><td colspan="4"><div class="empty-hint">You haven't raised any internal tickets yet.</div></td></tr>`;
+  }
 }
-function toggleTask(personaId, idx){
-  const task = DATA.employees[personaId].tasks[idx];
-  task.done = !task.done;
-  renderEmpDashboard();
-}
-function setEmpLinkedTaskStatus(personaId, idx, newStatus){
-  const task = DATA.employees[personaId].tasks[idx];
-  if(!task || !task.link) return;
-  task.done = newStatus === 'Done';
-  setTaskStatus(task.link.clientId, task.link.taskId, newStatus, {skipEmpSync:true});
-}
-function renderEmpClients(){
+function renderEmpKanbanPage(){
   const e = DATA.employees[state.persona];
-  document.getElementById('emp-clients-rows').innerHTML = e.clients.map(cid=>{
-    const c = DATA.clients[cid];
-    return `<tr class="clickable" onclick="openClientDetail('${cid}','employee')">
-      <td><div class="name-cell"><span class="dot" style="background:${c.dotColor}"></span>${c.name}</div></td>
-      <td>${c.industry}</td><td>${c.projects.length}</td><td>${c.contractEnds}</td>
-      <td><span class="pill ${c.status.cls}">${c.status.label}</span></td>
-    </tr>`;
-  }).join('');
+  const select = document.getElementById('emp-kanban-client-select');
+  const prevVal = state.empKanbanClient && e.clients.includes(state.empKanbanClient) ? state.empKanbanClient : e.clients[0];
+  select.innerHTML = e.clients.map(cid=>`<option value="${cid}" ${cid===prevVal?'selected':''}>${DATA.clients[cid].name}</option>`).join('');
+  state.empKanbanClient = prevVal;
+  const board = document.getElementById('emp-kanban');
+  if(!prevVal){
+    board.innerHTML = '<div class="empty-hint">No clients assigned to you yet.</div>';
+    return;
+  }
+  renderKanban(board, prevVal, {allowAddColumn:true});
+}
+function setEmpKanbanClient(cid){
+  state.empKanbanClient = cid;
+  renderKanban(document.getElementById('emp-kanban'), cid, {allowAddColumn:true});
 }
 function openMyRaiseInternal(){ openModal('internal-ticket'); }
 
@@ -1082,6 +1110,7 @@ const MODAL_CONFIGS = {
     {key:'clientId', label:'Client', type:'select-clients'},
     {key:'employeeId', label:'Assign to', type:'select-employees'},
     {key:'title', label:'Task title', type:'text', placeholder:'e.g. Draft Q3 newsletter copy'},
+    {key:'epicId', label:'Epic (optional)', type:'select-epics'},
     {key:'status', label:'Status', type:'select', options:['To do','In progress','Review','Done'], default:'To do'},
     {key:'priority', label:'Priority', type:'select', options:['Low','Medium','High'], default:'Medium'},
     {key:'start', label:'Start date', type:'date'},
@@ -1090,6 +1119,7 @@ const MODAL_CONFIGS = {
   'sprint-item': { title:'Add work item to sprint', submitLabel:'Add item', fields:[
     {key:'title', label:'Work item title', type:'text', placeholder:'e.g. Fix checkout redirect bug'},
     {key:'assigneeId', label:'Assignee', type:'select-employees'},
+    {key:'epicId', label:'Epic (optional)', type:'select-epics'},
     {key:'status', label:'Status', type:'select', options:['To do','In progress','Review','Done'], default:'To do'},
     {key:'start', label:'Start date', type:'date'},
     {key:'end', label:'End date', type:'date'}
@@ -1098,6 +1128,12 @@ const MODAL_CONFIGS = {
     {key:'name', label:'Sprint name', type:'text', placeholder:'e.g. Sprint 3'},
     {key:'start', label:'Start date', type:'date'},
     {key:'end', label:'End date', type:'date'}
+  ]},
+  'new-column': { title:'Add a board column', submitLabel:'Add column', fields:[
+    {key:'name', label:'Column name', type:'text', placeholder:'e.g. Blocked, QA, Deployed'}
+  ]},
+  'new-epic': { title:'Add an epic', submitLabel:'Add epic', fields:[
+    {key:'name', label:'Epic name', type:'text', placeholder:'e.g. Festive Campaign Launch'}
   ]}
 };
 function fieldHtml(f){
@@ -1107,6 +1143,11 @@ function fieldHtml(f){
   if(f.type==='select') return `<div class="field"><label>${f.label}</label><select id="mf-${f.key}">${f.options.map(o=>`<option ${o===f.default?'selected':''}>${o}</option>`).join('')}</select></div>`;
   if(f.type==='select-clients') return `<div class="field"><label>${f.label}</label><select id="mf-${f.key}" ${state.modalOpts.lockClient?'disabled':''}>${Object.entries(DATA.clients).map(([id,c])=>`<option value="${id}" ${id===(state.modalOpts.lockClient?state.currentClient:Object.keys(DATA.clients)[0])?'selected':''}>${c.name}</option>`).join('')}</select></div>`;
   if(f.type==='select-employees') return `<div class="field"><label>${f.label}</label><select id="mf-${f.key}">${Object.entries(DATA.employees).map(([id,e])=>`<option value="${id}">${e.name} — ${e.title}</option>`).join('')}</select></div>`;
+  if(f.type==='select-epics'){
+    const cid = state.modalOpts.lockClient ? state.currentClient : (state.modalOpts.clientId || Object.keys(DATA.clients)[0]);
+    const epics = cid ? getEpics(DATA.clients[cid]) : [];
+    return `<div class="field"><label>${f.label}</label><select id="mf-${f.key}"><option value="">No epic</option>${epics.map(ep=>`<option value="${ep.id}">${ep.name}</option>`).join('')}</select></div>`;
+  }
   if(f.type==='file') return `<div class="field"><label>${f.label}</label><div class="file-drop" id="mf-file-drop" onclick="document.getElementById('mf-file').click()">Click to upload a screenshot, video or file</div><input type="file" id="mf-file" style="display:none" onchange="onFilePicked(this)"></div>`;
   return '';
 }
@@ -1163,6 +1204,8 @@ function submitModal(){
   if(state.modalMode==='assign-task') ok = assignTask(vals);
   if(state.modalMode==='sprint-item') ok = addSprintItem(vals);
   if(state.modalMode==='new-sprint') ok = createSprint(vals);
+  if(state.modalMode==='new-column') ok = createColumn(vals);
+  if(state.modalMode==='new-epic') ok = createEpic(vals);
 
   if(ok !== false) closeModal();
 }
@@ -1183,9 +1226,33 @@ function addSprintItem(vals){
   if(!client.tasks) client.tasks = [];
   const id = nextTaskId(client);
   const pKey = 'med';
-  client.tasks.push({id, t:vals.title, a:emp.initials, p:pKey, status:vals.status, sprintId, start:vals.start||null, end:vals.end||null});
+  client.tasks.push({id, t:vals.title, a:emp.initials, p:pKey, status:vals.status, sprintId, start:vals.start||null, end:vals.end||null, epicId:vals.epicId||null, assignedBy:'Admin'});
   emp.tasks.unshift({title:`${vals.title} — ${client.name}`, due: vals.end ? fmtDate(vals.end) : 'TBD', priority:'Medium', done:vals.status==='Done', link:{clientId, taskId:id}});
   if(!emp.clients.includes(clientId)) emp.clients.push(clientId);
+  setClientTab('kanban', document.querySelector('.cd-tab.active'));
+  return true;
+}
+function createColumn(vals){
+  const {clientId} = state.modalOpts;
+  const client = DATA.clients[clientId];
+  if(!client || !vals.name.trim()) return false;
+  const columns = getColumns(client);
+  if(columns.includes(vals.name.trim())) return false;
+  columns.push(vals.name.trim());
+  if(state.currentClient===clientId && state.currentTab==='kanban'){
+    setClientTab('kanban', document.querySelector('.cd-tab.active'));
+  } else if(state.role==='employee'){
+    renderEmpKanbanPage();
+  }
+  return true;
+}
+function createEpic(vals){
+  const {clientId} = state.modalOpts;
+  const client = DATA.clients[clientId];
+  if(!client || !vals.name.trim()) return false;
+  const epics = getEpics(client);
+  const color = EPIC_COLORS[epics.length % EPIC_COLORS.length];
+  epics.push({id:'ep'+(epics.length+1)+'_'+Date.now().toString(36).slice(-4), name:vals.name.trim(), color});
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
   return true;
 }
@@ -1239,7 +1306,7 @@ function assignTask(vals){
   const pKey = vals.priority==='High'?'high':vals.priority==='Medium'?'med':'low';
   if(!client.tasks) client.tasks = [];
   const taskId = nextTaskId(client);
-  client.tasks.push({id:taskId, t:vals.title, a:emp.initials, p:pKey, status:vals.status, sprintId:null, start:vals.start||null, end:vals.end||null});
+  client.tasks.push({id:taskId, t:vals.title, a:emp.initials, p:pKey, status:vals.status, sprintId:null, start:vals.start||null, end:vals.end||null, epicId:vals.epicId||null, assignedBy:'Admin'});
   emp.tasks.unshift({title:`${vals.title} — ${client.name}`, due: vals.end ? fmtDate(vals.end) : 'TBD', priority:vals.priority, done:vals.status==='Done', link:{clientId:vals.clientId, taskId}});
   if(!emp.clients.includes(vals.clientId)) emp.clients.push(vals.clientId);
   if(state.currentClient===vals.clientId && state.currentTab==='kanban'){
@@ -1255,6 +1322,7 @@ function assignTask(vals){
    is instantly visible in the other.
    ========================================================= */
 const BOARD_COLUMNS = ["To do","In progress","Review","Done"];
+const EPIC_COLORS = ["#0F6E56","#C75A3A","#BA7517","#3D5A99","#7A4A9E","#A32D2D"];
 function fmtDate(iso){
   if(!iso) return null;
   const d = new Date(iso+'T00:00:00');
@@ -1264,11 +1332,25 @@ function dateRangeLabel(t){
   if(!t.start && !t.end) return null;
   return `${fmtDate(t.start)||'?'} → ${fmtDate(t.end)||'?'}`;
 }
-function renderKanban(board, clientId){
+/* Columns are per-client so any board can grow its own workflow,
+   Jira-style, via the "+ Add column" control next to Done. */
+function getColumns(client){
+  if(!client.columns) client.columns = [...BOARD_COLUMNS];
+  return client.columns;
+}
+function getEpics(client){
+  if(!client.epics) client.epics = [];
+  return client.epics;
+}
+function epicById(client, epicId){
+  return getEpics(client).find(e=>e.id===epicId) || null;
+}
+function renderKanban(board, clientId, opts={}){
   board.innerHTML = '';
   const client = DATA.clients[clientId];
   const tasks = client.tasks || [];
-  BOARD_COLUMNS.forEach(col=>{
+  const columns = getColumns(client);
+  columns.forEach(col=>{
     const cards = tasks.filter(t=>t.status===col);
     const colEl = document.createElement('div');
     colEl.className = 'kcol'; colEl.dataset.col = col;
@@ -1277,10 +1359,12 @@ function renderKanban(board, clientId){
       const card = document.createElement('div');
       card.className = `kcard p-${c.p}`; card.draggable = true; card.dataset.id = c.id||'';
       const sprint = c.sprintId ? (client.sprints||[]).find(s=>s.id===c.sprintId) : null;
+      const epic = c.epicId ? epicById(client, c.epicId) : null;
       const range = dateRangeLabel(c);
-      card.innerHTML = `<div class="t">${c.t}</div>
+      card.innerHTML = `${epic?`<span class="epic-tag" style="background:${epic.color}">${epic.name}</span>`:''}
+        <div class="t">${c.t}</div>
         ${range?`<div class="kcard-dates">${range}</div>`:''}
-        <div class="meta-row"><span class="init">${c.a}</span>${sprint?`<span class="pill gray" style="padding:1px 7px;">${sprint.name}</span>`:''}</div>`;
+        <div class="meta-row"><span class="init">${c.a}</span>${sprint?`<span class="pill gray" style="padding:1px 7px;">${sprint.name}</span>`:''}<span class="assigned-by">By ${c.assignedBy||'Admin'}</span></div>`;
       card.addEventListener('dragstart', e=>{ card.classList.add('dragging'); e.dataTransfer.setData('text/plain', c.t); });
       card.addEventListener('dragend', ()=> card.classList.remove('dragging'));
       colEl.appendChild(card);
@@ -1297,6 +1381,13 @@ function renderKanban(board, clientId){
     });
     board.appendChild(colEl);
   });
+  if(opts.allowAddColumn){
+    const addBtn = document.createElement('div');
+    addBtn.className = 'kcol-add';
+    addBtn.innerHTML = '+ Add column';
+    addBtn.onclick = ()=> openModal('new-column',{clientId});
+    board.appendChild(addBtn);
+  }
 }
 
 /* ---- single source of truth: updates the task, then re-renders
@@ -1321,6 +1412,12 @@ function setTaskSprint(clientId, taskId, sprintId){
   task.sprintId = sprintId || null;
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
+function setTaskEpic(clientId, taskId, epicId){
+  const task = (DATA.clients[clientId].tasks||[]).find(t=>t.id===taskId);
+  if(!task) return;
+  task.epicId = epicId || null;
+  setClientTab('kanban', document.querySelector('.cd-tab.active'));
+}
 function syncLinkedEmployeeTask(clientId, taskId, isDone){
   Object.values(DATA.employees).forEach(emp=>{
     emp.tasks.forEach(t=>{
@@ -1332,7 +1429,7 @@ function refreshTaskViews(){
   if(state.currentClient && document.getElementById('view-client-detail').classList.contains('active')){
     setClientTab(state.currentTab, document.querySelector('.cd-tab.active'));
   }
-  if(document.getElementById('view-emp-dashboard').classList.contains('active')) renderEmpDashboard();
+  if(document.getElementById('view-emp-kanban').classList.contains('active')) renderEmpKanbanPage();
 }
 
 /* ---- Jira-style sprint planning (admin only) — reads/writes the SAME
@@ -1351,6 +1448,11 @@ function jiraRowHtml(clientId, client, it, opts={}){
               <option value="">Backlog</option>
               ${(client.sprints||[]).map(s=>`<option value="${s.id}" ${it.sprintId===s.id?'selected':''}>${s.name}</option>`).join('')}
             </select>` : '';
+  const epics = getEpics(client);
+  const epicSelect = `<select class="jira-status" style="text-transform:none;font-weight:500;width:120px;" title="Epic" onchange="setTaskEpic('${clientId}','${it.id}',this.value)">
+              <option value="">No epic</option>
+              ${epics.map(ep=>`<option value="${ep.id}" ${it.epicId===ep.id?'selected':''}>${ep.name}</option>`).join('')}
+            </select>`;
   return `<div class="jira-row">
             <span class="jira-type story" title="Story"><svg viewBox="0 0 16 16"><path d="M2 2h12v12H2z"/></svg></span>
             <span class="jira-key">${keyLabel(it.id)}</span>
@@ -1361,6 +1463,7 @@ function jiraRowHtml(clientId, client, it, opts={}){
               <input type="date" value="${it.end||''}" title="End date" onchange="setTaskDates('${clientId}','${it.id}','end',this.value)">
             </div>
             <span class="jira-tag">${client.domainLabel}</span>
+            ${epicSelect}
             ${moveSelect}
             <select class="jira-status ${statusCls}" onchange="setTaskStatus('${clientId}','${it.id}',this.value)">
               <option ${it.status==='To do'?'selected':''}>To do</option>
@@ -1368,6 +1471,7 @@ function jiraRowHtml(clientId, client, it, opts={}){
               <option ${it.status==='Review'?'selected':''}>Review</option>
               <option ${it.status==='Done'?'selected':''}>Done</option>
             </select>
+            <span class="assignedby-pill" title="Assigned by">By ${it.assignedBy||'Admin'}</span>
             <span class="jira-avatar">${it.a}</span>
           </div>`;
 }
@@ -1375,9 +1479,17 @@ function renderKanbanSprints(container, clientId){
   const client = DATA.clients[clientId];
   if(!client.sprints) client.sprints = [];
   const tasks = client.tasks || [];
+  const epics = getEpics(client);
   const sprintIds = new Set(client.sprints.map(s=>s.id));
   const backlogItems = tasks.filter(t=>!t.sprintId || !sprintIds.has(t.sprintId));
-  let html = `<div class="jira-toolbar"><button class="btn ghost sm" onclick="openModal('new-sprint',{clientId:'${clientId}'})">+ Add sprint</button></div>`;
+  let html = `<div class="jira-toolbar" style="justify-content:space-between;">
+      <div class="epic-toolbar">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);">Epics:</span>
+        ${epics.length ? epics.map(ep=>`<span class="epic-pill" style="background:${ep.color}">${ep.name}</span>`).join('') : '<span class="empty-hint" style="padding:0;">None yet</span>'}
+        <button class="btn ghost sm" onclick="openModal('new-epic',{clientId:'${clientId}'})">+ Add epic</button>
+      </div>
+      <button class="btn ghost sm" onclick="openModal('new-sprint',{clientId:'${clientId}'})">+ Add sprint</button>
+    </div>`;
   if(!client.sprints.length && !backlogItems.length){
     html += `<div class="empty-hint">No sprints yet. Use "+ Add sprint" to start planning and distributing work.</div>`;
   } else {
@@ -1407,6 +1519,7 @@ function renderKanbanSprints(container, clientId){
         </div>
         ${items.length ? items.map(it=>jiraRowHtml(clientId, client, it)).join('') : `<div class="empty-hint" style="padding:14px;">No work items in this sprint yet.</div>`}
         <div class="jira-add" onclick="openModal('sprint-item',{clientId:'${clientId}',sprintId:'${s.id}'})">+ Create work item</div>
+        ${sprintMessageBoxHtml(clientId, s)}
       </div>`;
     });
     if(backlogItems.length){
@@ -1422,6 +1535,35 @@ function renderKanbanSprints(container, clientId){
     }
   }
   container.innerHTML = html;
+}
+/* ---- Message box (admin side): a lightweight discussion thread scoped
+   to each sprint, so admins can leave notes/instructions for the team
+   without those internal notes leaking into the client<->admin audit trail ---- */
+function sprintMessageBoxHtml(clientId, sprint){
+  if(!sprint.messages) sprint.messages = [];
+  const msgs = sprint.messages;
+  return `<div class="sprint-msgbox">
+    <div class="msg-head">💬 Sprint messages</div>
+    <div class="sprint-msg-list">
+      ${msgs.length ? msgs.map(m=>`<div class="sprint-msg"><span class="init">${m.initials}</span>
+        <div class="body"><b>${m.author}</b> <span class="ts">· ${m.ts}</span><div class="txt">${m.text}</div></div></div>`).join('')
+        : '<div class="empty-hint" style="padding:2px 0;">No messages yet — leave a note for the team below.</div>'}
+    </div>
+    <div class="sprint-msg-input">
+      <input type="text" id="sprint-msg-input-${sprint.id}" placeholder="Message the team about this sprint..." onkeydown="if(event.key==='Enter') postSprintMessage('${clientId}','${sprint.id}')">
+      <button class="btn sm" onclick="postSprintMessage('${clientId}','${sprint.id}')">Send</button>
+    </div>
+  </div>`;
+}
+function postSprintMessage(clientId, sprintId){
+  const input = document.getElementById(`sprint-msg-input-${sprintId}`);
+  if(!input || !input.value.trim()) return;
+  const client = DATA.clients[clientId];
+  const sprint = client.sprints.find(s=>s.id===sprintId);
+  if(!sprint) return;
+  if(!sprint.messages) sprint.messages = [];
+  sprint.messages.push({author:'Riya Mehta', initials:'RM', text:input.value.trim(), ts:'Just now'});
+  setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
 function toggleSprintState(clientId, sprintId){
   const s = DATA.clients[clientId].sprints.find(sp=>sp.id===sprintId);
