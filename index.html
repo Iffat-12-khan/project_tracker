@@ -57,6 +57,14 @@
   .btn{background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter';}
   .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
   .btn.sm{padding:6px 11px;font-size:12px;}
+  .btn.danger{background:#B3261E;border:1px solid #B3261E;color:#fff;}
+  .btn.danger:hover{background:#8f1f19;border-color:#8f1f19;}
+  .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(20,23,31,.5);z-index:60;align-items:center;justify-content:center;}
+  .confirm-overlay.active{display:flex;}
+  .confirm-box{background:var(--surface);border-radius:12px;padding:22px;width:360px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+  .confirm-box h3{margin:0 0 8px;font-size:15px;}
+  .confirm-box p{margin:0 0 18px;font-size:13.5px;color:var(--text-2);line-height:1.5;}
+  .confirm-actions{display:flex;justify-content:flex-end;gap:8px;}
 
   .content{padding:26px 28px;overflow-y:auto;}
   .view{display:none;}
@@ -129,9 +137,12 @@
   .kcard .epic-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 7px;border-radius:4px;margin-bottom:6px;color:#fff;}
   .kcard .t{font-size:13px;font-weight:500;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
   .kcard .t .t-text{flex:1;}
-  .kcard-edit-btn{background:transparent;border:none;cursor:pointer;color:var(--text-3);padding:2px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:1;transition:.12s;}
+  .kcard-edit-btn{background:var(--paper);border:1px solid var(--border);cursor:pointer;color:var(--text-2);padding:2px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:1;transition:.12s;}
   .kcard-edit-btn:hover{background:var(--paper);color:var(--accent-strong);}
-  .kcard-edit-btn svg{width:13px;height:13px;}
+  .kcard-delete-btn{background:#FDEDEA;border:1px solid #F3C6BE;cursor:pointer;color:#B3261E;padding:2px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:1;transition:.12s;}
+  .kcard-delete-btn:hover{background:#B3261E;color:#fff;border-color:#B3261E;}
+  .kcard-actions{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+  .kcard-edit-btn svg,.kcard-delete-btn svg{width:13px;height:13px;}
   .kcard .meta-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px;}
   .kcard-dates{font-size:10.5px;color:var(--text-2);margin-bottom:7px;}
   .kcard .assigned-by{font-size:9.5px;color:var(--text-2);background:#EDECE5;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;}
@@ -175,6 +186,10 @@
   .ticket-edit-btn{background:transparent;border:none;cursor:pointer;color:var(--text-2);padding:5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;}
   .ticket-edit-btn:hover{background:var(--paper);color:var(--accent-strong);}
   .ticket-edit-btn svg{width:15px;height:15px;}
+  .ticket-delete-btn{background:#FDEDEA;border:1px solid #F3C6BE;cursor:pointer;color:#B3261E;padding:5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;}
+  .ticket-delete-btn:hover{background:#B3261E;color:#fff;border-color:#B3261E;}
+  .ticket-delete-btn svg{width:15px;height:15px;}
+  .row-actions{display:flex;align-items:center;gap:2px;}
   .cal-ev{font-size:10px;padding:2px 5px;border-radius:5px;margin-bottom:2px;font-weight:500;display:flex;align-items:center;justify-content:space-between;gap:4px;}
   .cal-ev.post{background:var(--accent-soft);color:var(--accent-strong);}
   .cal-ev.meet{background:var(--amber-soft);color:#7A4A0B;}
@@ -182,7 +197,10 @@
   .cal-ev .cal-ev-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .cal-ev-edit-btn{background:transparent;border:none;cursor:pointer;color:inherit;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.85;transition:.12s;}
   .cal-ev-edit-btn:hover{opacity:1;}
-  .cal-ev-edit-btn svg{width:10px;height:10px;}
+  .cal-ev-delete-btn{background:transparent;border:none;cursor:pointer;color:inherit;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.85;transition:.12s;}
+  .cal-ev-delete-btn:hover{opacity:1;color:#B3261E;}
+  .cal-ev-actions{display:flex;align-items:center;gap:3px;flex-shrink:0;}
+  .cal-ev-edit-btn svg,.cal-ev-delete-btn svg{width:10px;height:10px;}
   .cal-legend{display:flex;gap:16px;margin-top:14px;font-size:11.5px;color:var(--text-2);}
 
   /* ASSET GRID */
@@ -309,6 +327,17 @@
   </div>
 </div>
 
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Delete this?</h3>
+    <p id="confirm-message"></p>
+    <div class="confirm-actions">
+      <button class="btn ghost sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn sm danger" id="confirm-ok-btn" onclick="confirmOk()">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="sidebar">
   <div class="brand"><div class="mark"></div><span>Pronttera</span></div>
 
@@ -366,7 +395,7 @@
     <!-- ===== ADMIN: CLIENTS LIST ===== -->
     <div class="view" id="view-admin-clients">
       <table>
-        <tr><th>Client</th><th>Industry</th><th>Active projects</th><th>Contract ends</th><th>Status</th></tr>
+        <tr><th>Client</th><th>Industry</th><th>Active projects</th><th>Contract ends</th><th>Status</th><th></th></tr>
         <tbody id="admin-clients-rows"></tbody>
       </table>
     </div>
@@ -374,7 +403,7 @@
     <!-- ===== ADMIN: EMPLOYEES ===== -->
     <div class="view" id="view-admin-employees">
       <table>
-        <tr><th>Name</th><th>Title</th><th>Assigned clients</th><th>Open tasks</th></tr>
+        <tr><th>Name</th><th>Title</th><th>Assigned clients</th><th>Open tasks</th><th></th></tr>
         <tbody id="admin-employees-rows"></tbody>
       </table>
     </div>
@@ -838,6 +867,7 @@ function renderAdminClients(){
       <td><div class="name-cell"><span class="dot" style="background:${c.dotColor}"></span>${c.name}</div></td>
       <td>${c.industry}</td><td>${c.projects.length}</td><td>${c.contractEnds}</td>
       <td><span class="pill ${c.status.cls}">${c.status.label}</span></td>
+      <td>${ticketDeleteIcon(`deleteClient('${id}')`,'Delete client')}</td>
     </tr>`).join('');
 }
 function renderAdminEmployees(){
@@ -848,8 +878,34 @@ function renderAdminEmployees(){
       <td>${e.title}</td>
       <td>${e.clients.length ? e.clients.map(cid=>DATA.clients[cid].name).join(', ') : '<span class="empty-hint" style="padding:0;">None yet</span>'}</td>
       <td>${openTasks}</td>
+      <td>${ticketDeleteIcon(`deleteEmployee('${id}')`,'Delete employee')}</td>
     </tr>`;
   }).join('');
+}
+function deleteClient(id){
+  const client = DATA.clients[id];
+  if(!client) return;
+  customConfirm(`Delete ${client.name}? This removes the client and all of their tickets, tasks, events, and files. This cannot be undone.`, ()=>{
+    delete DATA.clients[id];
+    Object.values(DATA.employees).forEach(emp=>{
+      emp.clients = emp.clients.filter(cid=>cid!==id);
+      emp.tasks = emp.tasks.filter(t=>!(t.link && t.link.clientId===id));
+    });
+    if(state.currentClient===id) state.currentClient = null;
+    renderAdminClients();
+    renderNav();
+    if(document.getElementById('view-client-detail').classList.contains('active')){
+      setView('admin-clients');
+    }
+  }, {title:'Delete client?'});
+}
+function deleteEmployee(id){
+  const emp = DATA.employees[id];
+  if(!emp) return;
+  customConfirm(`Delete ${emp.name}? This removes them from the team. Their existing task assignments will be unassigned. This cannot be undone.`, ()=>{
+    delete DATA.employees[id];
+    renderAdminEmployees();
+  }, {title:'Delete employee?'});
 }
 function filterEmpTickets(f, el){
   state.empTicketFilter = f;
@@ -870,6 +926,10 @@ function prioCls(p){return p==='High'?'red':p==='Medium'?'amber':'gray';}
 function statusCls(s){return s==='Resolved'?'green':s==='In progress'?'amber':'gray';}
 function ticketEditIcon(onclickAttr){
   return `<button type="button" class="ticket-edit-btn" title="Edit ticket" onclick="event.stopPropagation();${onclickAttr}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>`;
+}
+const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`;
+function ticketDeleteIcon(onclickAttr, title='Delete'){
+  return `<button type="button" class="ticket-delete-btn" title="${title}" onclick="event.stopPropagation();${onclickAttr}">${TRASH_SVG}</button>`;
 }
 /* Audit is a client<->admin channel only — any entry authored by an
    employee (task/status updates, internal actions) is excluded so the
@@ -1108,9 +1168,19 @@ function renderEmpTicketsPage(){
     rows.innerHTML = mine.length ? mine.map(t=>
       `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
         <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
-        <td>${ticketEditIcon(`openEditInternalTicket(${t.idx})`)}</td></tr>`).join('')
+        <td><span class="row-actions">${ticketEditIcon(`openEditInternalTicket(${t.idx})`)}${ticketDeleteIcon(`deleteInternalTicket(${t.idx})`,'Delete ticket')}</span></td></tr>`).join('')
       : `<tr><td colspan="5"><div class="empty-hint">You haven't raised any internal tickets yet.</div></td></tr>`;
   }
+}
+function deleteInternalTicket(idx){
+  const t = DATA.employeeTickets[idx];
+  if(!t) return;
+  customConfirm(`Delete your internal ticket "${t.subject}"? This cannot be undone.`, ()=>{
+    DATA.employeeTickets.splice(idx, 1);
+    renderNav();
+    if(document.getElementById('view-admin-employee-support').classList.contains('active')) renderEmpTickets();
+    if(document.getElementById('view-emp-tickets').classList.contains('active')) renderEmpTicketsPage();
+  }, {title:'Delete ticket?'});
 }
 function renderEmpKanbanPage(){
   const e = DATA.employees[state.persona];
@@ -1185,8 +1255,17 @@ function renderClientTickets(){
       <td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
       <td>${t.attachment?`<span class="pill gray">${t.attachment}</span>`:'—'}</td>
       <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
-      <td>${ticketEditIcon(`openEditMyTicket('${state.persona}',${i})`)}</td></tr>`).join('')
+      <td><span class="row-actions">${ticketEditIcon(`openEditMyTicket('${state.persona}',${i})`)}${ticketDeleteIcon(`deleteMyTicket('${state.persona}',${i})`,'Delete ticket')}</span></td></tr>`).join('')
     : `<tr><td colspan="5"><div class="empty-state"><div class="big">🗂️</div>No support tickets yet. Use "+ Raise ticket" above to get help from your team.</div></td></tr>`;
+}
+function deleteMyTicket(clientId, idx){
+  const c = DATA.clients[clientId];
+  const t = c && c.tickets[idx];
+  if(!t) return;
+  customConfirm(`Delete your support ticket "${t.subject}"? This cannot be undone.`, ()=>{
+    c.tickets.splice(idx, 1);
+    if(document.getElementById('view-client-tickets').classList.contains('active')) renderClientTickets();
+  }, {title:'Delete ticket?'});
 }
 
 /* =========================================================
@@ -1327,6 +1406,26 @@ function openModal(mode, opts={}){
   document.getElementById('modal-overlay').classList.add('active');
 }
 function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); }
+
+/* ---- Lightweight in-page confirm dialog used for every delete action.
+   Deliberately not window.confirm(): native dialogs are blocked/ignored
+   in some embedded preview contexts, which made delete silently no-op. ---- */
+let _confirmCallback = null;
+function customConfirm(message, onConfirm, opts={}){
+  document.getElementById('confirm-title').textContent = opts.title || 'Delete this?';
+  document.getElementById('confirm-message').textContent = message;
+  _confirmCallback = onConfirm;
+  document.getElementById('confirm-overlay').classList.add('active');
+}
+function closeConfirm(){
+  document.getElementById('confirm-overlay').classList.remove('active');
+  _confirmCallback = null;
+}
+function confirmOk(){
+  const cb = _confirmCallback;
+  closeConfirm();
+  if(cb) cb();
+}
 function onFilePicked(input){
   if(input.files && input.files[0]){
     pickedFileName = input.files[0].name;
@@ -1504,6 +1603,18 @@ function saveEventEdit(vals){
   }
   return true;
 }
+function deleteEvent(clientId, day, evIdx){
+  const client = DATA.clients[clientId];
+  const events = client && client.calendar[day];
+  const ev = events && events[evIdx];
+  if(!ev) return;
+  customConfirm(`Delete "${ev[1]}" from the calendar? This cannot be undone.`, ()=>{
+    events.splice(evIdx, 1);
+    if(state.currentClient===clientId && state.currentTab==='calendar'){
+      setClientTab('calendar', document.querySelector('.cd-tab.active'));
+    }
+  }, {title:'Delete event?'});
+}
 function createProject(vals){
   if(!state.currentClient || !vals.name.trim()) return false;
   const statusCls = vals.status==='In progress'?'green':vals.status==='On hold'?'amber':'gray';
@@ -1575,8 +1686,10 @@ function renderKanban(board, clientId, opts={}){
       const epic = c.epicId ? epicById(client, c.epicId) : null;
       const range = dateRangeLabel(c);
       const editBtn = opts.allowEdit ? `<button type="button" class="kcard-edit-btn" title="Edit ticket" draggable="false" onclick="event.stopPropagation();openEditTask('${clientId}','${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>` : '';
+      const deleteBtn = opts.allowEdit ? `<button type="button" class="kcard-delete-btn" title="Delete ticket" draggable="false" onclick="event.stopPropagation();deleteTask('${clientId}','${c.id}')">${TRASH_SVG}</button>` : '';
+      const cardActions = opts.allowEdit ? `<span class="kcard-actions">${editBtn}${deleteBtn}</span>` : '';
       card.innerHTML = `${epic?`<span class="epic-tag" style="background:${epic.color}">${epic.name}</span>`:''}
-        <div class="t"><span class="t-text">${c.t}</span>${editBtn}</div>
+        <div class="t"><span class="t-text">${c.t}</span>${cardActions}</div>
         ${range?`<div class="kcard-dates">${range}</div>`:''}
         <div class="meta-row"><span class="init">${c.a}</span>${sprint?`<span class="pill gray" style="padding:1px 7px;">${sprint.name}</span>`:''}<span class="assigned-by">By ${c.assignedBy||'Admin'}</span></div>`;
       card.addEventListener('dragstart', e=>{ card.classList.add('dragging'); e.dataTransfer.setData('text/plain', c.t); });
@@ -1637,6 +1750,19 @@ function saveTaskEdit(vals){
   syncLinkedEmployeeTask(clientId, taskId, t.status==='Done');
   refreshTaskViews();
   return true;
+}
+function deleteTask(clientId, taskId){
+  const client = DATA.clients[clientId];
+  const tasks = client && client.tasks;
+  const t = tasks && tasks.find(x=>x.id===taskId);
+  if(!t) return;
+  customConfirm(`Delete ticket "${t.t}"? This cannot be undone.`, ()=>{
+    client.tasks = tasks.filter(x=>x.id!==taskId);
+    Object.values(DATA.employees).forEach(emp=>{
+      emp.tasks = emp.tasks.filter(et=>!(et.link && et.link.clientId===clientId && et.link.taskId===taskId));
+    });
+    refreshTaskViews();
+  }, {title:'Delete ticket?'});
 }
 /* ---- single source of truth: updates the task, then re-renders
    whichever views (board / sprints / employee dashboard) are on screen ---- */
@@ -1829,7 +1955,9 @@ function renderCalendar(grid, events, opts={}){
     let html = `<div class="num">${day}</div>`;
     (events[day]||[]).forEach(([type,label],evIdx)=>{
       const editBtn = opts.clientId ? `<button type="button" class="cal-ev-edit-btn" title="Edit event" onclick="event.stopPropagation();openEditEvent('${opts.clientId}',${day},${evIdx})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>` : '';
-      html += `<div class="cal-ev ${type}"><span class="cal-ev-label">${label}</span>${editBtn}</div>`;
+      const deleteBtn = opts.clientId ? `<button type="button" class="cal-ev-delete-btn" title="Delete event" onclick="event.stopPropagation();deleteEvent('${opts.clientId}',${day},${evIdx})">${TRASH_SVG}</button>` : '';
+      const evActions = opts.clientId ? `<span class="cal-ev-actions">${editBtn}${deleteBtn}</span>` : '';
+      html += `<div class="cal-ev ${type}"><span class="cal-ev-label">${label}</span>${evActions}</div>`;
     });
     if(opts.clientId){
       html += `<button type="button" class="cal-add-btn" title="Add event on this date" onclick="event.stopPropagation(); openAddEventForDay('${opts.clientId}',${day})">+</button>`;
