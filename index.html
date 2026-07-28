@@ -127,7 +127,11 @@
   .kcard.p-med{border-left-color:var(--amber);}
   .kcard.p-low{border-left-color:var(--text-3);}
   .kcard .epic-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 7px;border-radius:4px;margin-bottom:6px;color:#fff;}
-  .kcard .t{font-size:13px;font-weight:500;margin-bottom:8px;}
+  .kcard .t{font-size:13px;font-weight:500;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
+  .kcard .t .t-text{flex:1;}
+  .kcard-edit-btn{background:transparent;border:none;cursor:pointer;color:var(--text-3);padding:2px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:1;transition:.12s;}
+  .kcard-edit-btn:hover{background:var(--paper);color:var(--accent-strong);}
+  .kcard-edit-btn svg{width:13px;height:13px;}
   .kcard .meta-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px;}
   .kcard-dates{font-size:10.5px;color:var(--text-2);margin-bottom:7px;}
   .kcard .assigned-by{font-size:9.5px;color:var(--text-2);background:#EDECE5;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;}
@@ -161,13 +165,24 @@
   /* CALENDAR */
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
   .cal-day-h{background:var(--paper);padding:8px;font-size:11px;font-weight:600;text-align:center;color:var(--text-2);}
-  .cal-cell{background:var(--surface);min-height:78px;padding:6px;font-size:11.5px;}
+  .cal-cell{background:var(--surface);min-height:78px;padding:6px;font-size:11.5px;position:relative;}
   .cal-cell .num{color:var(--text-3);font-size:11px;margin-bottom:4px;}
   .cal-cell.muted{background:#F7F7F3;}
-  .cal-ev{font-size:10px;padding:2px 5px;border-radius:5px;margin-bottom:2px;font-weight:500;}
+  .cal-add-btn{position:absolute;top:4px;right:4px;width:17px;height:17px;border-radius:5px;background:var(--surface);border:1px solid var(--border);color:var(--text-2);font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Inter';padding:0;opacity:1;transition:.12s;}
+  .cal-add-btn:hover{background:var(--accent-soft);color:var(--accent-strong);border-color:var(--accent);}
+
+  /* TICKET EDIT ICON */
+  .ticket-edit-btn{background:transparent;border:none;cursor:pointer;color:var(--text-2);padding:5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;}
+  .ticket-edit-btn:hover{background:var(--paper);color:var(--accent-strong);}
+  .ticket-edit-btn svg{width:15px;height:15px;}
+  .cal-ev{font-size:10px;padding:2px 5px;border-radius:5px;margin-bottom:2px;font-weight:500;display:flex;align-items:center;justify-content:space-between;gap:4px;}
   .cal-ev.post{background:var(--accent-soft);color:var(--accent-strong);}
   .cal-ev.meet{background:var(--amber-soft);color:#7A4A0B;}
   .cal-ev.deadline{background:var(--clay-soft);color:#8C3E23;}
+  .cal-ev .cal-ev-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cal-ev-edit-btn{background:transparent;border:none;cursor:pointer;color:inherit;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.85;transition:.12s;}
+  .cal-ev-edit-btn:hover{opacity:1;}
+  .cal-ev-edit-btn svg{width:10px;height:10px;}
   .cal-legend{display:flex;gap:16px;margin-top:14px;font-size:11.5px;color:var(--text-2);}
 
   /* ASSET GRID */
@@ -356,6 +371,14 @@
       </table>
     </div>
 
+    <!-- ===== ADMIN: EMPLOYEES ===== -->
+    <div class="view" id="view-admin-employees">
+      <table>
+        <tr><th>Name</th><th>Title</th><th>Assigned clients</th><th>Open tasks</th></tr>
+        <tbody id="admin-employees-rows"></tbody>
+      </table>
+    </div>
+
     <!-- ===== ADMIN: EMPLOYEE SUPPORT ===== -->
     <div class="view" id="view-admin-employee-support">
       <div class="filter-tabs">
@@ -365,7 +388,7 @@
         <div class="ftab" data-f="Resolved" onclick="filterEmpTickets('Resolved',this)">Resolved</div>
       </div>
       <table>
-        <tr><th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th></tr>
+        <tr><th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th></tr>
         <tbody id="admin-emp-tickets-rows"></tbody>
       </table>
     </div>
@@ -440,7 +463,7 @@
     <!-- ===== CLIENT: SUPPORT TICKETS ===== -->
     <div class="view" id="view-client-tickets">
       <table>
-        <tr><th>Subject</th><th>Priority</th><th>Attachment</th><th>Status</th></tr>
+        <tr><th>Subject</th><th>Priority</th><th>Attachment</th><th>Status</th><th></th></tr>
         <tbody id="client-tickets-rows"></tbody>
       </table>
     </div>
@@ -624,6 +647,7 @@ const state = { role:"admin", persona:null, currentClient:null, currentTab:null,
 const titles = {
   "admin-dashboard":["Dashboard","Agency-wide overview across all clients"],
   "admin-clients":["Clients","Click into a client to see their full project workspace"],
+  "admin-employees":["Employees","Manage your team and what they're currently assigned to"],
   "admin-employee-support":["Employee support","Internal requests raised by your team"],
   "client-detail":["","" ],
   "emp-tickets":["Tickets","Client tickets from your accounts, and your own internal requests"],
@@ -640,7 +664,7 @@ const titles = {
 const NAV = {
   admin:[
     {group:"Overview", items:[["dashboard","admin-dashboard",iconGrid()]]},
-    {group:"Agency", items:[["clients","admin-clients",iconClients()]]},
+    {group:"Agency", items:[["clients","admin-clients",iconClients()],["employees","admin-employees",iconEmployee()]]},
     {group:"Support", items:[["employee-support","admin-employee-support",iconTicket(),true]]}
   ],
   employee:[
@@ -658,6 +682,7 @@ function iconGrid(){return '<svg viewBox="0 0 24 24" fill="none" stroke="current
 function iconClients(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M15.5 14.2c2.8.3 4.7 2.3 4.7 5.3"/></svg>';}
 function iconTicket(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v9a2 2 0 0 1-2 2H9l-5 4z"/></svg>';}
 function iconCal(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>';}
+function iconEmployee(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 18c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5"/></svg>';}
 
 function renderNav(){
   const wrap = document.getElementById('nav-container');
@@ -675,7 +700,7 @@ function renderNav(){
   });
 }
 function capLabel(v){
-  const map={dashboard:"Dashboard",clients:"Clients","employee-support":"Employee support",calendar:"Calendar",tickets:"Support tickets",myprojects:"My projects",kanban:"Kanban board"};
+  const map={dashboard:"Dashboard",clients:"Clients",employees:"Employees","employee-support":"Employee support",calendar:"Calendar",tickets:"Support tickets",myprojects:"My projects",kanban:"Kanban board"};
   return map[v]||v;
 }
 
@@ -697,6 +722,7 @@ function setView(id, el){
 
   if(id==='admin-dashboard') renderAdminDashboard();
   if(id==='admin-clients') renderAdminClients();
+  if(id==='admin-employees') renderAdminEmployees();
   if(id==='admin-employee-support') renderEmpTickets();
   if(id==='emp-tickets') renderEmpTicketsPage();
   if(id==='emp-kanban') renderEmpKanbanPage();
@@ -727,6 +753,10 @@ function updateTopbarButtons(id){
     secondary.onclick = ()=>openModal('assign-task');
     primary.style.display='inline-block'; primary.textContent='+ New client';
     primary.onclick = ()=>openModal('new-client');
+  }
+  if(id==='admin-employees'){
+    primary.style.display='inline-block'; primary.textContent='+ Add employee';
+    primary.onclick = ()=>openModal('new-employee');
   }
   if(id==='admin-employee-support'){
     primary.style.display='inline-block'; primary.textContent='+ Assign task';
@@ -810,6 +840,17 @@ function renderAdminClients(){
       <td><span class="pill ${c.status.cls}">${c.status.label}</span></td>
     </tr>`).join('');
 }
+function renderAdminEmployees(){
+  document.getElementById('admin-employees-rows').innerHTML = Object.entries(DATA.employees).map(([id,e])=>{
+    const openTasks = e.tasks.filter(t=>!t.done).length;
+    return `<tr>
+      <td><div class="name-cell"><span class="init" style="width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;">${e.initials}</span>${e.name}</div></td>
+      <td>${e.title}</td>
+      <td>${e.clients.length ? e.clients.map(cid=>DATA.clients[cid].name).join(', ') : '<span class="empty-hint" style="padding:0;">None yet</span>'}</td>
+      <td>${openTasks}</td>
+    </tr>`;
+  }).join('');
+}
 function filterEmpTickets(f, el){
   state.empTicketFilter = f;
   document.querySelectorAll('#view-admin-employee-support .ftab').forEach(t=>t.classList.remove('active'));
@@ -818,13 +859,18 @@ function filterEmpTickets(f, el){
 }
 function renderEmpTickets(){
   const list = DATA.employeeTickets.filter(t=> state.empTicketFilter==='all' || t.status===state.empTicketFilter);
-  document.getElementById('admin-emp-tickets-rows').innerHTML = list.length ? list.map(t=>
-    `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
-     <td><span class="pill ${statusCls(t.status)} clickable" onclick="cycleStatus(${DATA.employeeTickets.indexOf(t)})">${t.status}</span></td></tr>`).join('')
-    : `<tr><td colspan="4"><div class="empty-hint">No tickets in this filter.</div></td></tr>`;
+  document.getElementById('admin-emp-tickets-rows').innerHTML = list.length ? list.map(t=>{
+    const idx = DATA.employeeTickets.indexOf(t);
+    return `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
+     <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td><td>${ticketEditIcon(`openEditInternalTicket(${idx})`)}</td></tr>`;
+  }).join('')
+    : `<tr><td colspan="5"><div class="empty-hint">No tickets in this filter.</div></td></tr>`;
 }
 function prioCls(p){return p==='High'?'red':p==='Medium'?'amber':'gray';}
 function statusCls(s){return s==='Resolved'?'green':s==='In progress'?'amber':'gray';}
+function ticketEditIcon(onclickAttr){
+  return `<button type="button" class="ticket-edit-btn" title="Edit ticket" onclick="event.stopPropagation();${onclickAttr}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>`;
+}
 /* Audit is a client<->admin channel only — any entry authored by an
    employee (task/status updates, internal actions) is excluded so the
    trail never surfaces employee activity, only what the client and
@@ -882,9 +928,9 @@ function setClientTab(tab, el){
     </div>`;
   }
   if(tab==='tickets'){
-    host.innerHTML = `<table><tr><th>Subject</th><th>Priority</th><th>Assigned to</th><th>Status</th></tr>
+    host.innerHTML = `<table><tr><th>Subject</th><th>Priority</th><th>Assigned to</th><th>Status</th><th></th></tr>
       ${c.tickets.length? c.tickets.map((t,i)=>`<tr><td>${t.subject}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td><td>${t.assignedTo}</td>
-        <td><span class="pill ${statusCls(t.status)} clickable" onclick="cycleClientTicketStatus('${state.currentClient}',${i})">${t.status}</span></td></tr>`).join('') : `<tr><td colspan="4"><div class="empty-hint">No tickets for this client.</div></td></tr>`}
+        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td><td>${ticketEditIcon(`openEditClientTicket('${state.currentClient}',${i})`)}</td></tr>`).join('') : `<tr><td colspan="5"><div class="empty-hint">No tickets for this client.</div></td></tr>`}
     </table>`;
   }
   if(tab==='invoices'){
@@ -910,7 +956,7 @@ function setClientTab(tab, el){
       renderKanbanSprints(document.getElementById('cd-kanban-sprints'), state.currentClient);
     } else {
       host.innerHTML = toggleHtml + `${isAdmin?'<div style="display:flex;justify-content:flex-end;margin:0 0 10px;"><button class="btn sm" onclick="openModal(\'assign-task\',{lockClient:true})">+ Assign task</button></div>':''}<div class="kanban-cols" id="cd-kanban"></div>`;
-      renderKanban(document.getElementById('cd-kanban'), state.currentClient, {allowAddColumn:isAdmin});
+      renderKanban(document.getElementById('cd-kanban'), state.currentClient, {allowAddColumn:isAdmin, allowEdit:isAdmin});
     }
   }
   if(tab==='assets'){
@@ -920,9 +966,15 @@ function setClientTab(tab, el){
       : '<div class="empty-hint">No assets uploaded yet.</div>'}</div>`;
   }
   if(tab==='calendar'){
-    host.innerHTML = `<div class="cal-grid" id="cd-cal"></div>
+    const isAdmin = state.detailFromRole==='admin';
+    const isDM = c.domain==='dm' || c.domain==='both';
+    const canAdd = isAdmin && isDM;
+    const addEventBtn = canAdd
+      ? `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn sm" onclick="openModal('new-event',{clientId:'${state.currentClient}'})">+ Add event</button></div>`
+      : '';
+    host.innerHTML = addEventBtn + `<div class="cal-grid" id="cd-cal"></div>
       <div class="cal-legend"><span><span class="cal-ev post" style="padding:2px 8px;">■</span> Post</span><span><span class="cal-ev meet" style="padding:2px 8px;">■</span> Meeting</span><span><span class="cal-ev deadline" style="padding:2px 8px;">■</span> Deadline</span></div>`;
-    renderCalendar(document.getElementById('cd-cal'), c.calendar);
+    renderCalendar(document.getElementById('cd-cal'), c.calendar, canAdd ? {clientId:state.currentClient} : {});
   }
   if(tab==='reports'){
     const r = c.reports;
@@ -964,6 +1016,63 @@ function cycleClientTicketStatus(clientId, idx){
   t.status = order[(order.indexOf(t.status)+1)%order.length];
   setClientTab('tickets', document.querySelector('.cd-tab.active'));
 }
+/* ---- Ticket editing: clicking a ticket row opens a dialog pre-filled
+   with its current data; saving writes the edits back in place and
+   refreshes whichever list is currently on screen. ---- */
+function openEditClientTicket(clientId, idx){
+  const t = DATA.clients[clientId].tickets[idx];
+  if(!t) return;
+  openModal('edit-client-ticket', {clientId, idx, prefill:{
+    subject:t.subject, desc:t.desc||'', priority:t.priority, assignedTo:t.assignedTo||'', status:t.status
+  }});
+}
+function saveClientTicketEdit(vals){
+  const {clientId, idx} = state.modalOpts;
+  const t = DATA.clients[clientId] && DATA.clients[clientId].tickets[idx];
+  if(!t || !vals.subject.trim()) return false;
+  t.subject = vals.subject.trim();
+  t.desc = vals.desc;
+  t.priority = vals.priority;
+  t.assignedTo = vals.assignedTo || 'Unassigned';
+  t.status = vals.status;
+  if(document.getElementById('view-client-detail').classList.contains('active') && state.currentTab==='tickets'){
+    setClientTab('tickets', document.querySelector('.cd-tab.active'));
+  }
+  if(document.getElementById('view-emp-tickets').classList.contains('active')) renderEmpTicketsPage();
+  return true;
+}
+function openEditInternalTicket(idx){
+  const t = DATA.employeeTickets[idx];
+  if(!t) return;
+  openModal('edit-internal-ticket', {idx, prefill:{subject:t.subject, priority:t.priority, status:t.status}});
+}
+function saveInternalTicketEdit(vals){
+  const {idx} = state.modalOpts;
+  const t = DATA.employeeTickets[idx];
+  if(!t || !vals.subject.trim()) return false;
+  t.subject = vals.subject.trim();
+  t.priority = vals.priority;
+  t.status = vals.status;
+  renderNav();
+  if(document.getElementById('view-admin-employee-support').classList.contains('active')) renderEmpTickets();
+  if(document.getElementById('view-emp-tickets').classList.contains('active')) renderEmpTicketsPage();
+  return true;
+}
+function openEditMyTicket(clientId, idx){
+  const t = DATA.clients[clientId].tickets[idx];
+  if(!t) return;
+  openModal('edit-my-ticket', {clientId, idx, prefill:{subject:t.subject, desc:t.desc||'', priority:t.priority}});
+}
+function saveMyTicketEdit(vals){
+  const {clientId, idx} = state.modalOpts;
+  const t = DATA.clients[clientId] && DATA.clients[clientId].tickets[idx];
+  if(!t || !vals.subject.trim()) return false;
+  t.subject = vals.subject.trim();
+  t.desc = vals.desc;
+  t.priority = vals.priority;
+  if(document.getElementById('view-client-tickets').classList.contains('active')) renderClientTickets();
+  return true;
+}
 
 /* =========================================================
    EMPLOYEE PORTAL — scoped to just Tickets + Kanban board.
@@ -981,7 +1090,7 @@ function renderEmpTicketsPage(){
   const head = document.getElementById('emp-tickets-head');
   const rows = document.getElementById('emp-tickets-rows');
   if(src==='client'){
-    head.innerHTML = `<th>Subject</th><th>Client</th><th>Priority</th><th>Status</th>`;
+    head.innerHTML = `<th>Subject</th><th>Client</th><th>Priority</th><th>Status</th><th></th>`;
     const clientTix = [];
     e.clients.forEach(cid=>{
       DATA.clients[cid].tickets.forEach((t,i)=> clientTix.push({clientId:cid, clientName:DATA.clients[cid].name, idx:i, ...t}));
@@ -990,15 +1099,17 @@ function renderEmpTicketsPage(){
       `<tr><td>${t.subject}<div class="meta" style="color:var(--text-2);font-size:11.5px;margin-top:2px;">${t.desc||''}</div></td>
         <td>${t.clientName}</td>
         <td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
-        <td><span class="pill ${statusCls(t.status)} clickable" onclick="cycleClientTicketStatus('${t.clientId}',${t.idx})">${t.status}</span></td></tr>`).join('')
-      : `<tr><td colspan="4"><div class="empty-hint">No client tickets on your accounts.</div></td></tr>`;
+        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
+        <td>${ticketEditIcon(`openEditClientTicket('${t.clientId}',${t.idx})`)}</td></tr>`).join('')
+      : `<tr><td colspan="5"><div class="empty-hint">No client tickets on your accounts.</div></td></tr>`;
   } else {
-    head.innerHTML = `<th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th>`;
+    head.innerHTML = `<th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th>`;
     const mine = DATA.employeeTickets.map((t,i)=>({...t, idx:i})).filter(t=>t.raisedBy===e.name);
     rows.innerHTML = mine.length ? mine.map(t=>
       `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
-        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td></tr>`).join('')
-      : `<tr><td colspan="4"><div class="empty-hint">You haven't raised any internal tickets yet.</div></td></tr>`;
+        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
+        <td>${ticketEditIcon(`openEditInternalTicket(${t.idx})`)}</td></tr>`).join('')
+      : `<tr><td colspan="5"><div class="empty-hint">You haven't raised any internal tickets yet.</div></td></tr>`;
   }
 }
 function renderEmpKanbanPage(){
@@ -1069,12 +1180,13 @@ function renderClientCalendarFull(){
 }
 function renderClientTickets(){
   const c = DATA.clients[state.persona];
-  document.getElementById('client-tickets-rows').innerHTML = c.tickets.length ? c.tickets.map(t=>
+  document.getElementById('client-tickets-rows').innerHTML = c.tickets.length ? c.tickets.map((t,i)=>
     `<tr><td>${t.subject}<div class="meta" style="color:var(--text-2);font-size:11.5px;margin-top:2px;">${t.desc||''}</div></td>
       <td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
       <td>${t.attachment?`<span class="pill gray">${t.attachment}</span>`:'—'}</td>
-      <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td></tr>`).join('')
-    : `<tr><td colspan="4"><div class="empty-state"><div class="big">🗂️</div>No support tickets yet. Use "+ Raise ticket" above to get help from your team.</div></td></tr>`;
+      <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
+      <td>${ticketEditIcon(`openEditMyTicket('${state.persona}',${i})`)}</td></tr>`).join('')
+    : `<tr><td colspan="5"><div class="empty-state"><div class="big">🗂️</div>No support tickets yet. Use "+ Raise ticket" above to get help from your team.</div></td></tr>`;
 }
 
 /* =========================================================
@@ -1092,6 +1204,23 @@ const MODAL_CONFIGS = {
   'internal-ticket': { title:'Raise an internal ticket', submitLabel:'Submit ticket', fields:[
     {key:'subject', label:'Subject', type:'text', placeholder:'e.g. Need a software license renewed'},
     {key:'desc', label:'Description', type:'textarea', placeholder:'Any extra detail for the admin team...'},
+    {key:'priority', label:'Priority', type:'select', options:['Low','Medium','High'], default:'Medium'}
+  ]},
+  'edit-client-ticket': { title:'Edit ticket', submitLabel:'Save changes', fields:[
+    {key:'subject', label:'Subject', type:'text', placeholder:'e.g. Landing page CTA not working'},
+    {key:'desc', label:'Description', type:'textarea', placeholder:"Add any detail that helps resolve it faster..."},
+    {key:'priority', label:'Priority', type:'select', options:['Low','Medium','High'], default:'Medium'},
+    {key:'assignedTo', label:'Assigned to', type:'text', placeholder:'e.g. Priya S.'},
+    {key:'status', label:'Status', type:'select', options:['Open','In progress','Resolved'], default:'Open'}
+  ]},
+  'edit-internal-ticket': { title:'Edit internal ticket', submitLabel:'Save changes', fields:[
+    {key:'subject', label:'Subject', type:'text', placeholder:'e.g. Need a software license renewed'},
+    {key:'priority', label:'Priority', type:'select', options:['Low','Medium','High'], default:'Medium'},
+    {key:'status', label:'Status', type:'select', options:['Open','In progress','Resolved'], default:'Open'}
+  ]},
+  'edit-my-ticket': { title:'Edit your ticket', submitLabel:'Save changes', fields:[
+    {key:'subject', label:'Subject', type:'text', placeholder:'e.g. Landing page CTA not working'},
+    {key:'desc', label:'Description', type:'textarea', placeholder:"Add any detail that helps resolve it faster..."},
     {key:'priority', label:'Priority', type:'select', options:['Low','Medium','High'], default:'Medium'}
   ]},
   'new-client': { title:'Add a new client', submitLabel:'Add client', fields:[
@@ -1129,6 +1258,29 @@ const MODAL_CONFIGS = {
     {key:'start', label:'Start date', type:'date'},
     {key:'end', label:'End date', type:'date'}
   ]},
+  'new-event': { title:'Add a calendar event', submitLabel:'Add event', fields:[
+    {key:'day', label:'Day of month (1–30)', type:'text', placeholder:'e.g. 18'},
+    {key:'type', label:'Event type', type:'select', options:['Content post','Client meeting','Deliverable due'], default:'Content post'},
+    {key:'label', label:'Event label', type:'text', placeholder:'e.g. Reels drop, Client sync call'}
+  ]},
+  'edit-event': { title:'Edit calendar event', submitLabel:'Save changes', fields:[
+    {key:'day', label:'Day of month (1–30)', type:'text', placeholder:'e.g. 18'},
+    {key:'type', label:'Event type', type:'select', options:['Content post','Client meeting','Deliverable due'], default:'Content post'},
+    {key:'label', label:'Event label', type:'text', placeholder:'e.g. Reels drop, Client sync call'}
+  ]},
+  'edit-task': { title:'Edit ticket', submitLabel:'Save changes', fields:[
+    {key:'title', label:'Task title', type:'text', placeholder:'e.g. Draft Q3 newsletter copy'},
+    {key:'assigneeId', label:'Assignee', type:'select-employees'},
+    {key:'status', label:'Status', type:'select', options:['To do','In progress','Review','Done']},
+    {key:'priority', label:'Priority', type:'select', options:['Low','Medium','High']},
+    {key:'epicId', label:'Epic (optional)', type:'select-epics'},
+    {key:'start', label:'Start date', type:'date'},
+    {key:'end', label:'End date', type:'date'}
+  ]},
+  'new-employee': { title:'Add a new employee', submitLabel:'Add employee', fields:[
+    {key:'name', label:'Full name', type:'text', placeholder:'e.g. Neha Kapoor'},
+    {key:'title', label:'Role / title', type:'select', options:['Content Writer','Graphic Designer','Video Editor','PPC Specialist','SEO Executive','Developer','QA Engineer','Team Lead'], default:'Content Writer'}
+  ]},
   'new-column': { title:'Add a board column', submitLabel:'Add column', fields:[
     {key:'name', label:'Column name', type:'text', placeholder:'e.g. Blocked, QA, Deployed'}
   ]},
@@ -1165,6 +1317,13 @@ function openModal(mode, opts={}){
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-submit-btn').textContent = cfg.submitLabel;
   document.getElementById('modal-body').innerHTML = fields.map(fieldHtml).join('');
+  if(opts.prefill){
+    fields.forEach(f=>{
+      if(!(f.key in opts.prefill)) return;
+      const el = document.getElementById('mf-'+f.key);
+      if(el) el.value = opts.prefill[f.key];
+    });
+  }
   document.getElementById('modal-overlay').classList.add('active');
 }
 function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); }
@@ -1200,6 +1359,13 @@ function submitModal(){
   }
   let ok = true;
   if(state.modalMode==='new-client') ok = createClient(vals);
+  if(state.modalMode==='new-employee') ok = createEmployee(vals);
+  if(state.modalMode==='new-event') ok = createCalendarEvent(vals);
+  if(state.modalMode==='edit-event') ok = saveEventEdit(vals);
+  if(state.modalMode==='edit-task') ok = saveTaskEdit(vals);
+  if(state.modalMode==='edit-client-ticket') ok = saveClientTicketEdit(vals);
+  if(state.modalMode==='edit-internal-ticket') ok = saveInternalTicketEdit(vals);
+  if(state.modalMode==='edit-my-ticket') ok = saveMyTicketEdit(vals);
   if(state.modalMode==='new-project') ok = createProject(vals);
   if(state.modalMode==='assign-task') ok = assignTask(vals);
   if(state.modalMode==='sprint-item') ok = addSprintItem(vals);
@@ -1291,6 +1457,53 @@ function createClient(vals){
   renderAdminClients();
   return true;
 }
+function createEmployee(vals){
+  if(!vals.name.trim()) return false;
+  let id = vals.name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  if(!id || DATA.employees[id]) id = id + '-' + Date.now();
+  const initials = vals.name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  DATA.employees[id] = {name:vals.name.trim(), initials, title:vals.title||'Team member', clients:[], tasks:[]};
+  renderAdminEmployees();
+  return true;
+}
+function createCalendarEvent(vals){
+  const {clientId} = state.modalOpts;
+  const client = DATA.clients[clientId];
+  if(!client || !vals.label.trim()) return false;
+  const day = Math.max(1, Math.min(30, parseInt(vals.day) || 1));
+  const typeKey = vals.type==='Client meeting' ? 'meet' : vals.type==='Deliverable due' ? 'deadline' : 'post';
+  if(!client.calendar[day]) client.calendar[day] = [];
+  client.calendar[day].push([typeKey, vals.label.trim()]);
+  if(state.currentClient===clientId && state.currentTab==='calendar'){
+    setClientTab('calendar', document.querySelector('.cd-tab.active'));
+  }
+  return true;
+}
+/* ---- Calendar event editing: clicking the edit icon on an event opens
+   a dialog pre-filled with its current data; saving writes the edit back
+   in place (moving it to a new day if the day was changed). ---- */
+function openEditEvent(clientId, day, evIdx){
+  const client = DATA.clients[clientId];
+  const ev = client && client.calendar[day] && client.calendar[day][evIdx];
+  if(!ev) return;
+  const typeLabel = ev[0]==='meet' ? 'Client meeting' : ev[0]==='deadline' ? 'Deliverable due' : 'Content post';
+  openModal('edit-event', {clientId, day, evIdx, prefill:{day:String(day), type:typeLabel, label:ev[1]}});
+}
+function saveEventEdit(vals){
+  const {clientId, day, evIdx} = state.modalOpts;
+  const client = DATA.clients[clientId];
+  const events = client && client.calendar[day];
+  if(!events || !events[evIdx] || !vals.label.trim()) return false;
+  const newDay = Math.max(1, Math.min(30, parseInt(vals.day) || day));
+  const typeKey = vals.type==='Client meeting' ? 'meet' : vals.type==='Deliverable due' ? 'deadline' : 'post';
+  events.splice(evIdx, 1);
+  if(!client.calendar[newDay]) client.calendar[newDay] = [];
+  client.calendar[newDay].push([typeKey, vals.label.trim()]);
+  if(state.currentClient===clientId && state.currentTab==='calendar'){
+    setClientTab('calendar', document.querySelector('.cd-tab.active'));
+  }
+  return true;
+}
 function createProject(vals){
   if(!state.currentClient || !vals.name.trim()) return false;
   const statusCls = vals.status==='In progress'?'green':vals.status==='On hold'?'amber':'gray';
@@ -1361,8 +1574,9 @@ function renderKanban(board, clientId, opts={}){
       const sprint = c.sprintId ? (client.sprints||[]).find(s=>s.id===c.sprintId) : null;
       const epic = c.epicId ? epicById(client, c.epicId) : null;
       const range = dateRangeLabel(c);
+      const editBtn = opts.allowEdit ? `<button type="button" class="kcard-edit-btn" title="Edit ticket" draggable="false" onclick="event.stopPropagation();openEditTask('${clientId}','${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>` : '';
       card.innerHTML = `${epic?`<span class="epic-tag" style="background:${epic.color}">${epic.name}</span>`:''}
-        <div class="t">${c.t}</div>
+        <div class="t"><span class="t-text">${c.t}</span>${editBtn}</div>
         ${range?`<div class="kcard-dates">${range}</div>`:''}
         <div class="meta-row"><span class="init">${c.a}</span>${sprint?`<span class="pill gray" style="padding:1px 7px;">${sprint.name}</span>`:''}<span class="assigned-by">By ${c.assignedBy||'Admin'}</span></div>`;
       card.addEventListener('dragstart', e=>{ card.classList.add('dragging'); e.dataTransfer.setData('text/plain', c.t); });
@@ -1390,6 +1604,40 @@ function renderKanban(board, clientId, opts={}){
   }
 }
 
+/* ---- Kanban card editing (admin side): clicking the edit icon on a
+   ticket opens a dialog pre-filled with its current data; saving writes
+   the edits back in place and refreshes every view built off tasks. ---- */
+function findEmployeeIdByInitials(initials){
+  return Object.keys(DATA.employees).find(id=>DATA.employees[id].initials===initials) || '';
+}
+function openEditTask(clientId, taskId){
+  const client = DATA.clients[clientId];
+  const t = client && (client.tasks||[]).find(x=>x.id===taskId);
+  if(!t) return;
+  const priorityLabel = t.p==='high' ? 'High' : t.p==='low' ? 'Low' : 'Medium';
+  openModal('edit-task', {clientId, taskId, prefill:{
+    title:t.t, assigneeId:findEmployeeIdByInitials(t.a), status:t.status, priority:priorityLabel,
+    epicId:t.epicId||'', start:t.start||'', end:t.end||''
+  }});
+}
+function saveTaskEdit(vals){
+  const {clientId, taskId} = state.modalOpts;
+  const client = DATA.clients[clientId];
+  const t = client && (client.tasks||[]).find(x=>x.id===taskId);
+  const emp = DATA.employees[vals.assigneeId];
+  if(!t || !emp || !vals.title.trim()) return false;
+  t.t = vals.title.trim();
+  t.a = emp.initials;
+  t.p = vals.priority==='High' ? 'high' : vals.priority==='Low' ? 'low' : 'med';
+  t.status = vals.status;
+  t.epicId = vals.epicId || null;
+  t.start = vals.start || null;
+  t.end = vals.end || null;
+  if(!emp.clients.includes(clientId)) emp.clients.push(clientId);
+  syncLinkedEmployeeTask(clientId, taskId, t.status==='Done');
+  refreshTaskViews();
+  return true;
+}
 /* ---- single source of truth: updates the task, then re-renders
    whichever views (board / sprints / employee dashboard) are on screen ---- */
 function setTaskStatus(clientId, taskId, newStatus, opts={}){
@@ -1571,7 +1819,7 @@ function toggleSprintState(clientId, sprintId){
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
 
-function renderCalendar(grid, events){
+function renderCalendar(grid, events, opts={}){
   grid.innerHTML='';
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   days.forEach(d=>{ const h=document.createElement('div'); h.className='cal-day-h'; h.textContent=d; grid.appendChild(h); });
@@ -1579,10 +1827,19 @@ function renderCalendar(grid, events){
   for(let day=1; day<=30; day++){
     const c = document.createElement('div'); c.className='cal-cell';
     let html = `<div class="num">${day}</div>`;
-    (events[day]||[]).forEach(([type,label])=>{ html += `<div class="cal-ev ${type}">${label}</div>`; });
+    (events[day]||[]).forEach(([type,label],evIdx)=>{
+      const editBtn = opts.clientId ? `<button type="button" class="cal-ev-edit-btn" title="Edit event" onclick="event.stopPropagation();openEditEvent('${opts.clientId}',${day},${evIdx})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>` : '';
+      html += `<div class="cal-ev ${type}"><span class="cal-ev-label">${label}</span>${editBtn}</div>`;
+    });
+    if(opts.clientId){
+      html += `<button type="button" class="cal-add-btn" title="Add event on this date" onclick="event.stopPropagation(); openAddEventForDay('${opts.clientId}',${day})">+</button>`;
+    }
     c.innerHTML = html;
     grid.appendChild(c);
   }
+}
+function openAddEventForDay(clientId, day){
+  openModal('new-event', {clientId, prefill:{day:String(day)}});
 }
 
 /* =========================================================
