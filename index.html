@@ -867,7 +867,7 @@ function renderAdminClients(){
       <td><div class="name-cell"><span class="dot" style="background:${c.dotColor}"></span>${c.name}</div></td>
       <td>${c.industry}</td><td>${c.projects.length}</td><td>${c.contractEnds}</td>
       <td><span class="pill ${c.status.cls}">${c.status.label}</span></td>
-      <td>${ticketDeleteIcon(`deleteClient('${id}')`,'Delete client')}</td>
+      <td>${ticketEditIcon(`openEditClient('${id}')`,'Edit client')}${ticketDeleteIcon(`deleteClient('${id}')`,'Delete client')}</td>
     </tr>`).join('');
 }
 function renderAdminEmployees(){
@@ -878,7 +878,7 @@ function renderAdminEmployees(){
       <td>${e.title}</td>
       <td>${e.clients.length ? e.clients.map(cid=>DATA.clients[cid].name).join(', ') : '<span class="empty-hint" style="padding:0;">None yet</span>'}</td>
       <td>${openTasks}</td>
-      <td>${ticketDeleteIcon(`deleteEmployee('${id}')`,'Delete employee')}</td>
+      <td>${ticketEditIcon(`openEditEmployee('${id}')`,'Edit employee')}${ticketDeleteIcon(`deleteEmployee('${id}')`,'Delete employee')}</td>
     </tr>`;
   }).join('');
 }
@@ -918,14 +918,14 @@ function renderEmpTickets(){
   document.getElementById('admin-emp-tickets-rows').innerHTML = list.length ? list.map(t=>{
     const idx = DATA.employeeTickets.indexOf(t);
     return `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
-     <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td><td>${ticketEditIcon(`openEditInternalTicket(${idx})`)}</td></tr>`;
+     <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td><td>${ticketEditIcon(`openEditInternalTicket(${idx})`,'Edit ticket')}</td></tr>`;
   }).join('')
     : `<tr><td colspan="5"><div class="empty-hint">No tickets in this filter.</div></td></tr>`;
 }
 function prioCls(p){return p==='High'?'red':p==='Medium'?'amber':'gray';}
 function statusCls(s){return s==='Resolved'?'green':s==='In progress'?'amber':'gray';}
-function ticketEditIcon(onclickAttr){
-  return `<button type="button" class="ticket-edit-btn" title="Edit ticket" onclick="event.stopPropagation();${onclickAttr}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>`;
+function ticketEditIcon(onclickAttr, title='Edit'){
+  return `<button type="button" class="ticket-edit-btn" title="${title}" onclick="event.stopPropagation();${onclickAttr}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 11-11-3.2-3.2-11 11z"/><path d="M14 6l3.2 3.2"/></svg></button>`;
 }
 const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`;
 function ticketDeleteIcon(onclickAttr, title='Delete'){
@@ -983,14 +983,14 @@ function setClientTab(tab, el){
 
   if(tab==='overview'){
     host.innerHTML = `<div class="grid-2">
-      <div class="card"><h3>Projects ${state.detailFromRole==='admin'?'<a onclick="openModal(\'new-project\')">+ Add project</a>':''}</h3><div>${(c.projects.length?c.projects.map(p=>projectRow(p)).join(''):'<div class="empty-hint">No active projects yet.</div>')}</div></div>
+      <div class="card"><h3>Projects ${state.detailFromRole==='admin'?'<a onclick="openModal(\'new-project\')">+ Add project</a>':''}</h3><div>${(c.projects.length?c.projects.map((p,idx)=>projectRow(p,state.currentClient,idx)).join(''):'<div class="empty-hint">No active projects yet.</div>')}</div></div>
       <div class="card"><h3>Milestones</h3><div class="milestone-list">${milestonesHtml(c.milestones)}</div></div>
     </div>`;
   }
   if(tab==='tickets'){
     host.innerHTML = `<table><tr><th>Subject</th><th>Priority</th><th>Assigned to</th><th>Status</th><th></th></tr>
       ${c.tickets.length? c.tickets.map((t,i)=>`<tr><td>${t.subject}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td><td>${t.assignedTo}</td>
-        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td><td>${ticketEditIcon(`openEditClientTicket('${state.currentClient}',${i})`)}</td></tr>`).join('') : `<tr><td colspan="5"><div class="empty-hint">No tickets for this client.</div></td></tr>`}
+        <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td><td>${ticketEditIcon(`openEditClientTicket('${state.currentClient}',${i})`,'Edit ticket')}</td></tr>`).join('') : `<tr><td colspan="5"><div class="empty-hint">No tickets for this client.</div></td></tr>`}
     </table>`;
   }
   if(tab==='invoices'){
@@ -1054,8 +1054,14 @@ function setClientTab(tab, el){
     }).join('')}</div>` : `<div class="empty-hint">No budget lines for this client yet.</div>`;
   }
 }
-function projectRow(p){
-  return `<div class="row-item"><div>${p.name}<div class="meta">${p.progress}% complete</div></div><span class="pill ${p.status.cls}">${p.status.label}</span></div>`;
+function projectRow(p, clientId, idx){
+  const canEdit = state.detailFromRole==='admin';
+  return `<div class="row-item"><div>${p.name}<div class="meta">${p.progress}% complete</div></div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      ${projectStatusPill(p)}
+      ${canEdit ? ticketEditIcon(`openEditProject('${clientId}',${idx})`,'Edit project') : ''}
+    </div>
+  </div>`;
 }
 function milestonesHtml(ms){
   if(!ms.length) return '<div class="empty-hint">No milestones set yet.</div>';
@@ -1160,7 +1166,7 @@ function renderEmpTicketsPage(){
         <td>${t.clientName}</td>
         <td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
         <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
-        <td>${ticketEditIcon(`openEditClientTicket('${t.clientId}',${t.idx})`)}</td></tr>`).join('')
+        <td>${ticketEditIcon(`openEditClientTicket('${t.clientId}',${t.idx})`,'Edit ticket')}</td></tr>`).join('')
       : `<tr><td colspan="5"><div class="empty-hint">No client tickets on your accounts.</div></td></tr>`;
   } else {
     head.innerHTML = `<th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th>`;
@@ -1168,7 +1174,7 @@ function renderEmpTicketsPage(){
     rows.innerHTML = mine.length ? mine.map(t=>
       `<tr><td>${t.subject}</td><td>${t.raisedBy}</td><td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
         <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
-        <td><span class="row-actions">${ticketEditIcon(`openEditInternalTicket(${t.idx})`)}${ticketDeleteIcon(`deleteInternalTicket(${t.idx})`,'Delete ticket')}</span></td></tr>`).join('')
+        <td><span class="row-actions">${ticketEditIcon(`openEditInternalTicket(${t.idx})`,'Edit ticket')}${ticketDeleteIcon(`deleteInternalTicket(${t.idx})`,'Delete ticket')}</span></td></tr>`).join('')
       : `<tr><td colspan="5"><div class="empty-hint">You haven't raised any internal tickets yet.</div></td></tr>`;
   }
 }
@@ -1208,7 +1214,7 @@ function renderClientDashboard(){
   const c = DATA.clients[state.persona];
   document.getElementById('client-projects').innerHTML = c.projects.length ? c.projects.map(p=>
     `<div class="row-item"><div style="flex:1;">${p.name}<div class="progress-bar lg" style="margin-top:8px;"><div class="fill" style="width:${p.progress}%"></div></div></div>
-     <span style="margin-left:14px;font-weight:600;">${p.progress}%</span></div>`).join('')
+     <div style="display:flex;align-items:center;gap:10px;margin-left:14px;"><span style="font-weight:600;">${p.progress}%</span>${projectStatusPill(p)}</div></div>`).join('')
     : '<div class="empty-hint">No active projects right now.</div>';
   document.getElementById('client-milestones').innerHTML = milestonesHtml(c.milestones);
 
@@ -1231,7 +1237,7 @@ function renderClientProjects(){
   host.innerHTML = c.projects.map(p=>`
     <div class="card" style="margin-bottom:18px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3 style="margin:0;font-size:16px;">${p.name}</h3><span class="pill ${p.status.cls}">${p.status.label}</span>
+        <h3 style="margin:0;font-size:16px;">${p.name}</h3>${projectStatusPill(p)}
       </div>
       <div class="progress-bar lg" style="margin-bottom:6px;"><div class="fill" style="width:${p.progress}%"></div></div>
       <div class="meta" style="margin-bottom:16px;">${p.progress}% complete · ${p.start||'—'} → ${p.end||'—'}</div>
@@ -1255,7 +1261,7 @@ function renderClientTickets(){
       <td><span class="pill ${prioCls(t.priority)}">${t.priority}</span></td>
       <td>${t.attachment?`<span class="pill gray">${t.attachment}</span>`:'—'}</td>
       <td><span class="pill ${statusCls(t.status)}">${t.status}</span></td>
-      <td><span class="row-actions">${ticketEditIcon(`openEditMyTicket('${state.persona}',${i})`)}${ticketDeleteIcon(`deleteMyTicket('${state.persona}',${i})`,'Delete ticket')}</span></td></tr>`).join('')
+      <td><span class="row-actions">${ticketEditIcon(`openEditMyTicket('${state.persona}',${i})`,'Edit ticket')}${ticketDeleteIcon(`deleteMyTicket('${state.persona}',${i})`,'Delete ticket')}</span></td></tr>`).join('')
     : `<tr><td colspan="5"><div class="empty-state"><div class="big">🗂️</div>No support tickets yet. Use "+ Raise ticket" above to get help from your team.</div></td></tr>`;
 }
 function deleteMyTicket(clientId, idx){
@@ -1309,10 +1315,22 @@ const MODAL_CONFIGS = {
     {key:'contractEnds', label:'Contract ends', type:'text', placeholder:'e.g. Dec 2027'},
     {key:'status', label:'Status', type:'select', options:['Active','Renewal due','Paused'], default:'Active'}
   ]},
+  'edit-client': { title:'Edit client details', submitLabel:'Save changes', fields:[
+    {key:'name', label:'Client name', type:'text', placeholder:'e.g. Solstice Interiors'},
+    {key:'industry', label:'Industry', type:'text', placeholder:'e.g. Home & lifestyle'},
+    {key:'domain', label:'Domain', type:'select', options:['DM','IT','Both'], default:'DM'},
+    {key:'contractEnds', label:'Contract ends', type:'text', placeholder:'e.g. Dec 2027'},
+    {key:'status', label:'Status', type:'select', options:['Active','Renewal due','Paused'], default:'Active'}
+  ]},
   'new-project': { title:'Add a new project', submitLabel:'Add project', fields:[
     {key:'name', label:'Project name', type:'text', placeholder:'e.g. Spring launch campaign'},
     {key:'progress', label:'Starting progress (%)', type:'text', placeholder:'0'},
-    {key:'status', label:'Status', type:'select', options:['Planning','In progress','On hold'], default:'Planning'}
+    {key:'status', label:'Status', type:'select', options:['Planning','In progress','On hold','Completed'], default:'Planning'}
+  ]},
+  'edit-project': { title:'Edit project', submitLabel:'Save changes', fields:[
+    {key:'name', label:'Project name', type:'text', placeholder:'e.g. Spring launch campaign'},
+    {key:'progress', label:'Progress (%)', type:'text', placeholder:'0'},
+    {key:'status', label:'Status', type:'select', options:['Planning','In progress','On hold','Completed'], default:'Planning'}
   ]},
   'assign-task': { title:'Assign work to an employee', submitLabel:'Assign task', fields:[
     {key:'clientId', label:'Client', type:'select-clients'},
@@ -1357,6 +1375,10 @@ const MODAL_CONFIGS = {
     {key:'end', label:'End date', type:'date'}
   ]},
   'new-employee': { title:'Add a new employee', submitLabel:'Add employee', fields:[
+    {key:'name', label:'Full name', type:'text', placeholder:'e.g. Neha Kapoor'},
+    {key:'title', label:'Role / title', type:'select', options:['Content Writer','Graphic Designer','Video Editor','PPC Specialist','SEO Executive','Developer','QA Engineer','Team Lead'], default:'Content Writer'}
+  ]},
+  'edit-employee': { title:'Edit employee details', submitLabel:'Save changes', fields:[
     {key:'name', label:'Full name', type:'text', placeholder:'e.g. Neha Kapoor'},
     {key:'title', label:'Role / title', type:'select', options:['Content Writer','Graphic Designer','Video Editor','PPC Specialist','SEO Executive','Developer','QA Engineer','Team Lead'], default:'Content Writer'}
   ]},
@@ -1458,7 +1480,9 @@ function submitModal(){
   }
   let ok = true;
   if(state.modalMode==='new-client') ok = createClient(vals);
+  if(state.modalMode==='edit-client') ok = saveClientEdit(vals);
   if(state.modalMode==='new-employee') ok = createEmployee(vals);
+  if(state.modalMode==='edit-employee') ok = saveEmployeeEdit(vals);
   if(state.modalMode==='new-event') ok = createCalendarEvent(vals);
   if(state.modalMode==='edit-event') ok = saveEventEdit(vals);
   if(state.modalMode==='edit-task') ok = saveTaskEdit(vals);
@@ -1466,6 +1490,7 @@ function submitModal(){
   if(state.modalMode==='edit-internal-ticket') ok = saveInternalTicketEdit(vals);
   if(state.modalMode==='edit-my-ticket') ok = saveMyTicketEdit(vals);
   if(state.modalMode==='new-project') ok = createProject(vals);
+  if(state.modalMode==='edit-project') ok = saveProjectEdit(vals);
   if(state.modalMode==='assign-task') ok = assignTask(vals);
   if(state.modalMode==='sprint-item') ok = addSprintItem(vals);
   if(state.modalMode==='new-sprint') ok = createSprint(vals);
@@ -1556,12 +1581,59 @@ function createClient(vals){
   renderAdminClients();
   return true;
 }
+function openEditClient(id){
+  const c = DATA.clients[id];
+  if(!c) return;
+  const domainLabel = c.domain==='it'?'IT':c.domain==='both'?'Both':'DM';
+  openModal('edit-client', {id, prefill:{name:c.name, industry:c.industry, domain:domainLabel, contractEnds:c.contractEnds, status:c.status.label}});
+}
+function saveClientEdit(vals){
+  const {id} = state.modalOpts;
+  const c = DATA.clients[id];
+  if(!c || !vals.name.trim()) return false;
+  c.name = vals.name.trim();
+  c.industry = vals.industry || '—';
+  const domainKey = vals.domain==='IT'?'it':vals.domain==='Both'?'both':'dm';
+  c.domain = domainKey;
+  c.domainLabel = vals.domain;
+  c.dotColor = domainKey==='it'?'var(--clay)':domainKey==='both'?'var(--amber)':'var(--accent)';
+  c.contractEnds = vals.contractEnds || '—';
+  c.status = {label:vals.status, cls: vals.status==='Active'?'green':vals.status==='Renewal due'?'amber':'gray'};
+  renderAdminClients();
+  refreshClientHeaderIfOpen(id);
+  return true;
+}
+function refreshClientHeaderIfOpen(id){
+  if(document.getElementById('view-client-detail').classList.contains('active') && state.currentClient===id){
+    const c = DATA.clients[id];
+    document.getElementById('cd-dot').style.background = c.dotColor;
+    document.getElementById('cd-name').textContent = c.name;
+    document.getElementById('cd-meta').textContent = `${c.industry} · Contract ends ${c.contractEnds}`;
+    document.getElementById('cd-domain-pill').textContent = c.domainLabel;
+    document.getElementById('cd-domain-pill').className = 'pill ' + (c.domain==='it'?'clay':c.domain==='both'?'amber':'green');
+  }
+}
 function createEmployee(vals){
   if(!vals.name.trim()) return false;
   let id = vals.name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
   if(!id || DATA.employees[id]) id = id + '-' + Date.now();
   const initials = vals.name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
   DATA.employees[id] = {name:vals.name.trim(), initials, title:vals.title||'Team member', clients:[], tasks:[]};
+  renderAdminEmployees();
+  return true;
+}
+function openEditEmployee(id){
+  const e = DATA.employees[id];
+  if(!e) return;
+  openModal('edit-employee', {id, prefill:{name:e.name, title:e.title}});
+}
+function saveEmployeeEdit(vals){
+  const {id} = state.modalOpts;
+  const e = DATA.employees[id];
+  if(!e || !vals.name.trim()) return false;
+  e.name = vals.name.trim();
+  e.title = vals.title || e.title;
+  e.initials = e.name.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
   renderAdminEmployees();
   return true;
 }
@@ -1617,11 +1689,34 @@ function deleteEvent(clientId, day, evIdx){
 }
 function createProject(vals){
   if(!state.currentClient || !vals.name.trim()) return false;
-  const statusCls = vals.status==='In progress'?'green':vals.status==='On hold'?'amber':'gray';
+  const statusCls = (vals.status==='In progress'||vals.status==='Completed')?'green':vals.status==='On hold'?'amber':'gray';
   const progress = Math.max(0, Math.min(100, parseInt(vals.progress)||0));
   DATA.clients[state.currentClient].projects.push({name:vals.name, progress, status:{label:vals.status,cls:statusCls}});
   setClientTab('overview', document.querySelector('.cd-tab[data-tab="overview"]'));
   return true;
+}
+function openEditProject(clientId, idx){
+  const p = DATA.clients[clientId] && DATA.clients[clientId].projects[idx];
+  if(!p) return;
+  openModal('edit-project', {clientId, idx, prefill:{name:p.name, progress:String(p.progress), status:p.status.label}});
+}
+function saveProjectEdit(vals){
+  const {clientId, idx} = state.modalOpts;
+  const p = DATA.clients[clientId] && DATA.clients[clientId].projects[idx];
+  if(!p || !vals.name.trim()) return false;
+  p.name = vals.name.trim();
+  p.progress = Math.max(0, Math.min(100, parseInt(vals.progress)||0));
+  const statusCls = (vals.status==='In progress'||vals.status==='Completed')?'green':vals.status==='On hold'?'amber':'gray';
+  p.status = {label:vals.status, cls:statusCls};
+  if(document.getElementById('view-client-detail').classList.contains('active') && state.currentClient===clientId && state.currentTab==='overview'){
+    setClientTab('overview', document.querySelector('.cd-tab.active'));
+  }
+  if(document.getElementById('view-client-dashboard').classList.contains('active')) renderClientDashboard();
+  if(document.getElementById('view-client-projects').classList.contains('active')) renderClientProjects();
+  return true;
+}
+function projectStatusPill(p){
+  return `<span class="pill ${p.status.cls}">${p.status.label==='Completed'?'✓ ':''}${p.status.label}</span>`;
 }
 function assignTask(vals){
   const client = DATA.clients[vals.clientId];
