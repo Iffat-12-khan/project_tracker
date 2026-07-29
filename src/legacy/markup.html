@@ -1,0 +1,183 @@
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">Raise a ticket</h3>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn ghost sm" onclick="closeModal()">Cancel</button>
+      <button class="btn sm" id="modal-submit-btn" onclick="submitModal()">Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Delete this?</h3>
+    <p id="confirm-message"></p>
+    <div class="confirm-actions">
+      <button class="btn ghost sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn sm danger" id="confirm-ok-btn" onclick="confirmOk()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="sidebar">
+  <div class="brand"><div class="mark"></div><span>Pronttera</span></div>
+
+  <div class="role-tier">
+    <button class="active" data-role="admin" onclick="setRole('admin',this)">Admin</button>
+    <button data-role="employee" onclick="setRole('employee',this)">Employee</button>
+    <button data-role="client" onclick="setRole('client',this)">Client</button>
+  </div>
+
+  <div id="persona-wrap" style="display:none;">
+    <div class="persona-label" id="persona-label">Acting as</div>
+    <select class="persona-select" id="persona-select" onchange="setPersona(this.value)"></select>
+  </div>
+
+  <div id="nav-container"></div>
+
+  <div class="sidebar-footer">
+    <div class="avatar" id="who-avatar">RM</div>
+    <div class="who"><b id="who-name">Riya Mehta</b><span id="who-role">Super Admin</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div><h1 id="page-title">Dashboard</h1><div class="sub" id="page-sub">Agency-wide overview across all clients</div></div>
+    <div class="topbar-right">
+      <input class="search" placeholder="Search projects, clients, tickets...">
+      <button class="btn ghost" id="topbar-secondary-btn" style="display:none;"></button>
+      <button class="btn" id="topbar-primary-btn" style="display:none;"></button>
+    </div>
+  </div>
+
+  <div class="content" id="content-root">
+
+    <!-- ===== ADMIN: DASHBOARD ===== -->
+    <div class="view" id="view-admin-dashboard">
+      <div class="kpi-row">
+        <div class="kpi"><div class="label">Active projects</div><div class="value">7</div><div class="delta up">+2 this month</div></div>
+        <div class="kpi"><div class="label">Open tickets</div><div class="value">6</div><div class="delta down">2 overdue SLA</div></div>
+        <div class="kpi"><div class="label">Pending approvals</div><div class="value">4</div><div class="delta up">3 content, 1 creative</div></div>
+        <div class="kpi"><div class="label">Ad spend (MTD)</div><div class="value">₹4.8L</div><div class="delta up">12 active campaigns</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Upcoming client deadlines</h3>
+          <div id="admin-deadlines"></div>
+        </div>
+        <div class="card">
+          <h3>Recent activity</h3>
+          <div id="admin-activity"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN: CLIENTS LIST ===== -->
+    <div class="view" id="view-admin-clients">
+      <table>
+        <tr><th>Client</th><th>Industry</th><th>Active projects</th><th>Contract ends</th><th>Status</th><th></th></tr>
+        <tbody id="admin-clients-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== ADMIN: EMPLOYEES ===== -->
+    <div class="view" id="view-admin-employees">
+      <table>
+        <tr><th>Name</th><th>Title</th><th>Assigned clients</th><th>Open tasks</th><th></th></tr>
+        <tbody id="admin-employees-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== ADMIN: EMPLOYEE SUPPORT ===== -->
+    <div class="view" id="view-admin-employee-support">
+      <div class="filter-tabs">
+        <div class="ftab active" data-f="all" onclick="filterEmpTickets('all',this)">All</div>
+        <div class="ftab" data-f="Open" onclick="filterEmpTickets('Open',this)">Open</div>
+        <div class="ftab" data-f="In progress" onclick="filterEmpTickets('In progress',this)">In progress</div>
+        <div class="ftab" data-f="Resolved" onclick="filterEmpTickets('Resolved',this)">Resolved</div>
+      </div>
+      <table>
+        <tr><th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th></tr>
+        <tbody id="admin-emp-tickets-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== SHARED: CLIENT DETAIL (used by Admin + Employee) ===== -->
+    <div class="view" id="view-client-detail">
+      <div class="breadcrumb" onclick="backToClientList()">← Back to clients</div>
+      <div class="client-header">
+        <div class="id"><div class="dot-lg" id="cd-dot"></div>
+          <div><h2 id="cd-name"></h2><div class="meta" id="cd-meta"></div></div>
+        </div>
+        <span class="pill" id="cd-domain-pill"></span>
+      </div>
+      <div class="cd-tabs" id="cd-tabs"></div>
+      <div id="cd-tab-content"></div>
+    </div>
+
+    <!-- ===== EMPLOYEE: TICKETS ===== -->
+    <div class="view" id="view-emp-tickets">
+      <div class="filter-tabs">
+        <div class="ftab active" data-f="client" onclick="setEmpTicketSource('client',this)">Client tickets</div>
+        <div class="ftab" data-f="internal" onclick="setEmpTicketSource('internal',this)">My internal tickets</div>
+      </div>
+      <table id="emp-tickets-table">
+        <tr id="emp-tickets-head"><th>Subject</th><th>Client</th><th>Priority</th><th>Status</th></tr>
+        <tbody id="emp-tickets-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== EMPLOYEE: KANBAN BOARD ===== -->
+    <div class="view" id="view-emp-kanban">
+      <div class="emp-client-picker">
+        <label>Client board</label>
+        <select id="emp-kanban-client-select" onchange="setEmpKanbanClient(this.value)"></select>
+      </div>
+      <div class="kanban-cols" id="emp-kanban"></div>
+    </div>
+
+    <!-- ===== CLIENT: DASHBOARD ===== -->
+    <div class="view" id="view-client-dashboard">
+      <div class="grid-2">
+        <div class="card">
+          <h3>Your projects</h3>
+          <div id="client-projects"></div>
+        </div>
+        <div class="card">
+          <h3>Milestones</h3>
+          <div class="milestone-list" id="client-milestones"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>What's coming up <a onclick="setView('client-calendar')">View full calendar</a></h3>
+        <div id="client-upcoming"></div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: MY PROJECTS ===== -->
+    <div class="view" id="view-client-projects">
+      <div id="client-projects-cards"></div>
+    </div>
+
+    <!-- ===== CLIENT: CALENDAR ===== -->
+    <div class="view" id="view-client-calendar">
+      <div class="cal-grid" id="client-cal-grid"></div>
+      <div class="cal-legend">
+        <span><span class="cal-ev post" style="padding:2px 8px;">■</span> Content post</span>
+        <span><span class="cal-ev meet" style="padding:2px 8px;">■</span> Client meeting</span>
+        <span><span class="cal-ev deadline" style="padding:2px 8px;">■</span> Deliverable due</span>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: SUPPORT TICKETS ===== -->
+    <div class="view" id="view-client-tickets">
+      <table>
+        <tr><th>Subject</th><th>Priority</th><th>Attachment</th><th>Status</th><th></th></tr>
+        <tbody id="client-tickets-rows"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
