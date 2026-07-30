@@ -2,7 +2,7 @@
    DATA MODEL — every client owns its own scoped records.
    Clicking into a client/persona always re-renders from here.
    ========================================================= */
-const DATA = {
+const DEFAULT_DATA = {
   clients: {
     northstar: {
       name:"Northstar Retail", industry:"E-commerce", domain:"dm", domainLabel:"DM", dotColor:"var(--accent)",
@@ -164,6 +164,47 @@ const DATA = {
     {text:"Website landing page launch",meta:"Northstar Retail · due in 6 days",cls:"gray",pill:"Scheduled"}
   ]
 };
+
+const STORAGE_KEY = "project_tracker_data";
+
+function loadSavedData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && parsed.clients) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load project tracker data from localStorage:", e);
+  }
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+  } catch (e) {
+    console.error("Failed to save project tracker data to localStorage:", e);
+  }
+}
+
+function resetData() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  } catch (e) {
+    console.error("Failed to reset localStorage data:", e);
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", saveData);
+  window.addEventListener("pagehide", saveData);
+}
+
+const DATA = loadSavedData();
 
 /* =========================================================
    STATE
@@ -389,6 +430,7 @@ function deleteClient(id){
       emp.tasks = emp.tasks.filter(t=>!(t.link && t.link.clientId===id));
     });
     if(state.currentClient===id) state.currentClient = null;
+    saveData();
     renderAdminClients();
     renderNav();
     if(document.getElementById('view-client-detail').classList.contains('active')){
@@ -401,6 +443,7 @@ function deleteEmployee(id){
   if(!emp) return;
   customConfirm(`Delete ${emp.name}? This removes them from the team. Their existing task assignments will be unassigned. This cannot be undone.`, ()=>{
     delete DATA.employees[id];
+    saveData();
     renderAdminEmployees();
   }, {title:'Delete employee?'});
 }
@@ -441,6 +484,7 @@ function cycleStatus(idx){
   const item = DATA.employeeTickets[idx];
   if(!item) return;
   item.status = order[(order.indexOf(item.status)+1)%order.length];
+  saveData();
   renderEmpTickets();
   renderNav();
 }
@@ -570,6 +614,7 @@ function toggleAssetApproval(clientId, assetIdx){
   const order=[{label:"Draft",cls:"gray"},{label:"Pending",cls:"amber"},{label:"Approved",cls:"green"}];
   const idx = order.findIndex(o=>o.label===a.status.label);
   a.status = order[(idx+1)%order.length];
+  saveData();
   setClientTab('assets', document.querySelector('.cd-tab.active'));
 }
 function cycleClientTicketStatus(clientId, idx){
@@ -577,6 +622,7 @@ function cycleClientTicketStatus(clientId, idx){
   const t = DATA.clients[clientId].tickets[idx];
   if(!t) return;
   t.status = order[(order.indexOf(t.status)+1)%order.length];
+  saveData();
   setClientTab('tickets', document.querySelector('.cd-tab.active'));
 }
 /* ---- Ticket editing: clicking a ticket row opens a dialog pre-filled
@@ -598,6 +644,7 @@ function saveClientTicketEdit(vals){
   t.priority = vals.priority;
   t.assignedTo = vals.assignedTo || 'Unassigned';
   t.status = vals.status;
+  saveData();
   if(document.getElementById('view-client-detail').classList.contains('active') && state.currentTab==='tickets'){
     setClientTab('tickets', document.querySelector('.cd-tab.active'));
   }
@@ -616,6 +663,7 @@ function saveInternalTicketEdit(vals){
   t.subject = vals.subject.trim();
   t.priority = vals.priority;
   t.status = vals.status;
+  saveData();
   renderNav();
   if(document.getElementById('view-admin-employee-support').classList.contains('active')) renderEmpTickets();
   if(document.getElementById('view-emp-tickets').classList.contains('active')) renderEmpTicketsPage();
@@ -633,6 +681,7 @@ function saveMyTicketEdit(vals){
   t.subject = vals.subject.trim();
   t.desc = vals.desc;
   t.priority = vals.priority;
+  saveData();
   if(document.getElementById('view-client-tickets').classList.contains('active')) renderClientTickets();
   return true;
 }
@@ -680,6 +729,7 @@ function deleteInternalTicket(idx){
   if(!t) return;
   customConfirm(`Delete your internal ticket "${t.subject}"? This cannot be undone.`, ()=>{
     DATA.employeeTickets.splice(idx, 1);
+    saveData();
     renderNav();
     if(document.getElementById('view-admin-employee-support').classList.contains('active')) renderEmpTickets();
     if(document.getElementById('view-emp-tickets').classList.contains('active')) renderEmpTicketsPage();
@@ -767,6 +817,7 @@ function deleteMyTicket(clientId, idx){
   if(!t) return;
   customConfirm(`Delete your support ticket "${t.subject}"? This cannot be undone.`, ()=>{
     c.tickets.splice(idx, 1);
+    saveData();
     if(document.getElementById('view-client-tickets').classList.contains('active')) renderClientTickets();
   }, {title:'Delete ticket?'});
 }
@@ -966,12 +1017,14 @@ function submitModal(){
     if(!vals.subject.trim()) return;
     const c = DATA.clients[state.persona];
     c.tickets.unshift({subject:vals.subject, desc:vals.desc, priority:vals.priority, status:'Open', raisedBy:'Client', assignedTo:'Unassigned', date:'Today', attachment:vals.file});
+    saveData();
     renderClientTickets();
   }
   if(state.modalMode==='internal-ticket'){
     if(!vals.subject.trim()) return;
     const e = DATA.employees[state.persona];
     DATA.employeeTickets.unshift({subject:vals.subject, raisedBy:e.name, priority:vals.priority, status:'Open'});
+    saveData();
     renderNav();
     if(document.getElementById('view-admin-employee-support').classList.contains('active')) renderEmpTickets();
   }
@@ -994,7 +1047,10 @@ function submitModal(){
   if(state.modalMode==='new-column') ok = createColumn(vals);
   if(state.modalMode==='new-epic') ok = createEpic(vals);
 
-  if(ok !== false) closeModal();
+  if(ok !== false) {
+    saveData();
+    closeModal();
+  }
 }
 function nextTaskId(client){
   if(!client._seq){
@@ -1179,6 +1235,7 @@ function deleteEvent(clientId, day, evIdx){
   if(!ev) return;
   customConfirm(`Delete "${ev[1]}" from the calendar? This cannot be undone.`, ()=>{
     events.splice(evIdx, 1);
+    saveData();
     if(state.currentClient===clientId && state.currentTab==='calendar'){
       setClientTab('calendar', document.querySelector('.cd-tab.active'));
     }
@@ -1376,12 +1433,14 @@ function setTaskSprint(clientId, taskId, sprintId){
   const task = (DATA.clients[clientId].tasks||[]).find(t=>t.id===taskId);
   if(!task) return;
   task.sprintId = sprintId || null;
+  saveData();
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
 function setTaskEpic(clientId, taskId, epicId){
   const task = (DATA.clients[clientId].tasks||[]).find(t=>t.id===taskId);
   if(!task) return;
   task.epicId = epicId || null;
+  saveData();
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
 function syncLinkedEmployeeTask(clientId, taskId, isDone){
@@ -1392,6 +1451,7 @@ function syncLinkedEmployeeTask(clientId, taskId, isDone){
   });
 }
 function refreshTaskViews(){
+  saveData();
   if(state.currentClient && document.getElementById('view-client-detail').classList.contains('active')){
     setClientTab(state.currentTab, document.querySelector('.cd-tab.active'));
   }
@@ -1529,11 +1589,13 @@ function postSprintMessage(clientId, sprintId){
   if(!sprint) return;
   if(!sprint.messages) sprint.messages = [];
   sprint.messages.push({author:'Riya Mehta', initials:'RM', text:input.value.trim(), ts:'Just now'});
+  saveData();
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
 function toggleSprintState(clientId, sprintId){
   const s = DATA.clients[clientId].sprints.find(sp=>sp.id===sprintId);
   s.state = s.state==='planned' ? 'active' : 'completed';
+  saveData();
   setClientTab('kanban', document.querySelector('.cd-tab.active'));
 }
 
@@ -1656,8 +1718,10 @@ if (typeof window !== 'undefined') {
     renderKanban,
     renderKanbanSprints,
     renderNav,
+    resetData,
     saveClientEdit,
     saveClientTicketEdit,
+    saveData,
     saveEmployeeEdit,
     saveEventEdit,
     saveInternalTicketEdit,
