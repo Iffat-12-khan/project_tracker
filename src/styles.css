@@ -303,3 +303,181 @@
   .emp-client-picker{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
   .emp-client-picker label{font-size:12px;font-weight:600;color:var(--text-2);}
   .emp-client-picker select{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:'Inter';background:var(--surface);color:var(--text);}
+
+  /* TABLE RESPONSIVE WRAPPER */
+  .table-responsive{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+  /* MOBILE MENU BUTTON */
+  .mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--text);margin-right:10px;flex-shrink:0;}
+  .mobile-menu-btn:hover{background:var(--paper);}
+  .mobile-menu-btn svg{width:22px;height:22px;display:block;}
+  .topbar-left{display:flex;align-items:center;}
+
+  /* SIDEBAR OVERLAY (mobile) */
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:39;}
+  .sidebar-overlay.active{display:block;}
+
+  /* ============================================================
+     RESPONSIVE BREAKPOINTS
+     ============================================================ */
+
+  /* --- Tablet: ≤ 1024px --- */
+  @media (max-width:1024px){
+    .sidebar{width:220px;}
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .asset-grid{grid-template-columns:repeat(3,1fr);}
+    .jira-dateedit{display:none;}
+    .jira-tag{display:none;}
+    .search{width:140px;}
+    .topbar{padding:14px 18px;}
+    .content{padding:20px 18px;}
+  }
+
+  /* --- Tablet portrait: ≤ 768px --- */
+  @media (max-width:768px){
+    body{flex-direction:column;}
+
+    /* Sidebar becomes an off-canvas drawer */
+    .sidebar{
+      position:fixed;top:0;left:0;height:100vh;z-index:40;
+      transform:translateX(-100%);transition:transform .25s ease;
+      width:260px;
+    }
+    .sidebar.mobile-open{transform:translateX(0);}
+
+    /* Show hamburger */
+    .mobile-menu-btn{display:flex;align-items:center;justify-content:center;}
+
+    .main{flex:1;width:100%;min-height:100vh;}
+
+    .topbar{padding:12px 16px;gap:10px;}
+    .topbar-left{flex:1;min-width:0;}
+    .topbar h1{font-size:16px;}
+    .topbar .sub{display:none;}
+    .topbar-right{gap:6px;flex-shrink:0;}
+    .search{width:120px;font-size:12px;}
+    .btn{padding:7px 11px;font-size:12px;}
+
+    .content{padding:16px 14px;}
+
+    /* Grids collapse to single column */
+    .kpi-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+    .grid-2{grid-template-columns:1fr;}
+    .grid-3{grid-template-columns:1fr;}
+    .client-grid{grid-template-columns:1fr;}
+
+    /* Asset grid */
+    .asset-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+
+    /* Client detail header wraps */
+    .client-header{flex-wrap:wrap;gap:10px;}
+    .client-header h2{font-size:17px;}
+    .cd-tabs{gap:2px;}
+    .cd-tab{padding:7px 10px;font-size:12px;}
+
+    /* Kanban: narrower cards, horizontal scroll preserved */
+    .kcol{width:200px;flex:0 0 200px;}
+    .kcol-add{width:160px;flex:0 0 160px;}
+
+    /* Jira sprint rows */
+    .jira-row{flex-wrap:wrap;gap:6px;}
+    .jira-dateedit{display:none;}
+    .jira-tag{display:none;}
+    .jira-title{min-width:100px;}
+    .assignedby-pill{display:none;}
+
+    /* Calendar: smaller cells */
+    .cal-cell{min-height:55px;padding:3px;}
+    .cal-cell .num{font-size:10px;}
+    .cal-ev{font-size:9px;padding:1px 3px;}
+
+    /* Topbar buttons: icon-only or hide secondary */
+    #topbar-secondary-btn{display:none !important;}
+
+    /* Filter tabs wrap */
+    .filter-tabs{flex-wrap:wrap;gap:6px;}
+
+    /* Modal full-width on small screens */
+    .modal{width:calc(100vw - 32px);max-width:100%;padding:18px;}
+
+    /* Confirm box */
+    .confirm-box{width:calc(100vw - 32px);max-width:100%;padding:18px;}
+
+    /* Tables: let table-responsive handle horizontal scroll */
+    th{font-size:10.5px;padding:8px 10px;}
+    td{padding:10px 10px;font-size:12.5px;}
+  }
+
+  /* --- Mobile: ≤ 480px --- */
+  @media (max-width:480px){
+    .topbar{padding:10px 12px;}
+    .content{padding:12px 10px;}
+
+    .kpi-row{grid-template-columns:1fr 1fr;gap:8px;}
+    .kpi .value{font-size:22px;}
+    .kpi{padding:12px 13px;}
+
+    .asset-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+
+    /* Hide search bar to save space */
+    .search{display:none;}
+
+    .topbar-right{gap:4px;}
+    .btn.ghost{display:none;}
+    .btn{padding:7px 10px;font-size:11.5px;}
+
+    .card{padding:14px 14px;}
+    .card h3{font-size:13.5px;}
+
+    /* Client tabs: scrollable row */
+    .cd-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;}
+    .cd-tab{flex-shrink:0;padding:7px 9px;font-size:11.5px;}
+
+    /* Kanban columns */
+    .kcol{width:170px;flex:0 0 170px;}
+    .kcol h4{font-size:11.5px;}
+    .kcard{padding:9px 10px;}
+    .kcard .t{font-size:12px;}
+
+    /* Calendar tiny */
+    .cal-cell{min-height:42px;}
+    .cal-ev{display:none;}
+    .cal-cell .num{font-size:9.5px;}
+    .cal-day-h{font-size:10px;padding:5px;}
+
+    /* Milestone */
+    .milestone-item .mtitle{font-size:12.5px;}
+
+    /* Sprint messages */
+    .sprint-msgbox{padding:8px 10px;}
+
+    /* Pill smaller */
+    .pill{font-size:10px;padding:2px 7px;}
+
+    /* Row items */
+    .row-item{font-size:12px;}
+
+    /* Tables */
+    th{padding:7px 8px;font-size:10px;}
+    td{padding:9px 8px;font-size:12px;}
+
+    /* Jira rows */
+    .jira-status{font-size:10px;padding:3px 5px;}
+    .jira-mini-counts span{width:20px;height:18px;font-size:10px;}
+    .jira-head{padding:9px 10px;}
+    .jira-add{padding:8px 10px;font-size:11.5px;}
+
+    /* Modals */
+    .modal{padding:14px;}
+    .modal h3{font-size:14px;}
+    .field label{font-size:11px;}
+    .field input[type=text],.field textarea,.field select{font-size:12px;}
+
+    /* Client detail header */
+    .client-header h2{font-size:15px;}
+    .client-header .meta{font-size:11.5px;}
+
+    /* Filter tabs */
+    .ftab{padding:5px 10px;font-size:11.5px;}
+  }

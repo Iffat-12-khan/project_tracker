@@ -271,10 +271,25 @@ function capLabel(v){
   return map[v]||v;
 }
 
+function toggleMobileSidebar(force){
+  const sb = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if(!sb || !overlay) return;
+  const active = force !== undefined ? force : !sb.classList.contains('mobile-open');
+  if(active){
+    sb.classList.add('mobile-open');
+    overlay.classList.add('active');
+  } else {
+    sb.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+  }
+}
+
 /* =========================================================
    VIEW SWITCHING
    ========================================================= */
 function setView(id, el){
+  toggleMobileSidebar(false);
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const target = document.getElementById('view-'+id);
   if(target) target.classList.add('active');
@@ -1747,6 +1762,7 @@ if (typeof window !== 'undefined') {
     ticketDeleteIcon,
     ticketEditIcon,
     toggleAssetApproval,
+    toggleMobileSidebar,
     toggleSprintState,
     updateTopbarButtons
   });

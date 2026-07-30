@@ -20,6 +20,8 @@
   </div>
 </div>
 
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
+
 <div class="sidebar">
   <div class="brand"><div class="mark"></div><span>Pronttera</span></div>
 
@@ -44,7 +46,12 @@
 
 <div class="main">
   <div class="topbar">
-    <div><h1 id="page-title">Dashboard</h1><div class="sub" id="page-sub">Agency-wide overview across all clients</div></div>
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div><h1 id="page-title">Dashboard</h1><div class="sub" id="page-sub">Agency-wide overview across all clients</div></div>
+    </div>
     <div class="topbar-right">
       <input class="search" placeholder="Search projects, clients, tickets...">
       <button class="btn ghost" id="topbar-secondary-btn" style="display:none;"></button>
@@ -76,18 +83,22 @@
 
     <!-- ===== ADMIN: CLIENTS LIST ===== -->
     <div class="view" id="view-admin-clients">
-      <table>
-        <tr><th>Client</th><th>Industry</th><th>Active projects</th><th>Contract ends</th><th>Status</th><th></th></tr>
-        <tbody id="admin-clients-rows"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <tr><th>Client</th><th>Industry</th><th>Active projects</th><th>Contract ends</th><th>Status</th><th></th></tr>
+          <tbody id="admin-clients-rows"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== ADMIN: EMPLOYEES ===== -->
     <div class="view" id="view-admin-employees">
-      <table>
-        <tr><th>Name</th><th>Title</th><th>Assigned clients</th><th>Open tasks</th><th></th></tr>
-        <tbody id="admin-employees-rows"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <tr><th>Name</th><th>Title</th><th>Assigned clients</th><th>Open tasks</th><th></th></tr>
+          <tbody id="admin-employees-rows"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== ADMIN: EMPLOYEE SUPPORT ===== -->
@@ -98,10 +109,12 @@
         <div class="ftab" data-f="In progress" onclick="filterEmpTickets('In progress',this)">In progress</div>
         <div class="ftab" data-f="Resolved" onclick="filterEmpTickets('Resolved',this)">Resolved</div>
       </div>
-      <table>
-        <tr><th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th></tr>
-        <tbody id="admin-emp-tickets-rows"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <tr><th>Subject</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th></tr>
+          <tbody id="admin-emp-tickets-rows"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== SHARED: CLIENT DETAIL (used by Admin + Employee) ===== -->
@@ -123,10 +136,12 @@
         <div class="ftab active" data-f="client" onclick="setEmpTicketSource('client',this)">Client tickets</div>
         <div class="ftab" data-f="internal" onclick="setEmpTicketSource('internal',this)">My internal tickets</div>
       </div>
-      <table id="emp-tickets-table">
-        <tr id="emp-tickets-head"><th>Subject</th><th>Client</th><th>Priority</th><th>Status</th></tr>
-        <tbody id="emp-tickets-rows"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="emp-tickets-table">
+          <tr id="emp-tickets-head"><th>Subject</th><th>Client</th><th>Priority</th><th>Status</th></tr>
+          <tbody id="emp-tickets-rows"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== EMPLOYEE: KANBAN BOARD ===== -->
@@ -173,10 +188,12 @@
 
     <!-- ===== CLIENT: SUPPORT TICKETS ===== -->
     <div class="view" id="view-client-tickets">
-      <table>
-        <tr><th>Subject</th><th>Priority</th><th>Attachment</th><th>Status</th><th></th></tr>
-        <tbody id="client-tickets-rows"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <tr><th>Subject</th><th>Priority</th><th>Attachment</th><th>Status</th><th></th></tr>
+          <tbody id="client-tickets-rows"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
